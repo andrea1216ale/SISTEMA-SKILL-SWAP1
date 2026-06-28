@@ -185,6 +185,22 @@
   font-size: inherit;
 }
 
+.verify-secondary {
+  width: 100%;
+  margin-top: 12px;
+  padding: 15px;
+  border: 1px solid var(--teal);
+  border-radius: 14px;
+  color: var(--teal);
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.verify-message { min-height: 24px; margin: 0 0 14px; color: var(--teal); }
+.verify-message--error { color: #b42318; }
+.login-submit:disabled, .verify-secondary:disabled { opacity: .6; cursor: wait; }
+
 @media (max-width: 1050px) {
   .register-form__grid { grid-template-columns: 1fr; }
   .register-control--wide { grid-column: auto; }
