@@ -15,6 +15,8 @@ app.get('/', (req, res) => {
 app.use('/api', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-app.listen(3000, () => {
-  console.log('Servidor iniciado en puerto 3000');
+const PORT = Number(process.env.PORT) || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Servidor iniciado en puerto ${PORT}`);
 });

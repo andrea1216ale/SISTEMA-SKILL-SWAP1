@@ -1,3 +1,5 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const mysql = require("mysql2");
 
 const connection = mysql.createConnection({
@@ -15,7 +17,7 @@ connection.connect((error) => {
     return;
   }
 
-  console.log("MySQL conectado correctamente a la base de datos skillswap");
+  console.log(`MySQL conectado correctamente a la base de datos ${process.env.DB_NAME || 'skillswap'}`);
 });
 
 module.exports = connection;
