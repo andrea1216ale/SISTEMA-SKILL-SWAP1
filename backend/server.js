@@ -10,11 +10,9 @@ app.use(cors());
 
 app.use(express.json());
 
-
-
 // prueba servidor
 
-app.get("/",(req,res)=>{
+app.get("/", (req,res)=>{
 
     res.send("Servidor Skill Swap funcionando");
 
@@ -23,7 +21,7 @@ app.get("/",(req,res)=>{
 
 
 
-// REGISTRO DE USUARIO
+// registro
 
 app.post("/registro",(req,res)=>{
 
@@ -46,13 +44,9 @@ app.post("/registro",(req,res)=>{
     db.query(sql,[
 
         datos.nombre,
-
         datos.correo,
-
         datos.password,
-
         datos.edad,
-
         datos.nivel
 
 
@@ -64,14 +58,12 @@ app.post("/registro",(req,res)=>{
             console.log(error);
 
 
-            res.status(500).json({
+            return res.status(500).json({
 
                 mensaje:"Error al registrar usuario"
 
             });
 
-
-            return;
 
         }
 
@@ -88,7 +80,9 @@ app.post("/registro",(req,res)=>{
     });
 
 
+
 });
+
 
 
 
