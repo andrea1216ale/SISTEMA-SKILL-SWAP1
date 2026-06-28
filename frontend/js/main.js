@@ -2,6 +2,7 @@ import { renderHomePage } from './pages/home-page.js';
 import { renderLoginPage } from './pages/login-page.js';
 import { renderRegisterPage } from './pages/register-page.js';
 import { renderDashboardPage } from './pages/dashboard.js';
+import { renderSearchPage } from './pages/search.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.querySelector('#app');
@@ -21,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'dashboard':
       renderDashboardPage(app);
+      break;
+    case 'search':
+      renderSearchPage(app);
       break;
     default:
       renderHomePage(app);

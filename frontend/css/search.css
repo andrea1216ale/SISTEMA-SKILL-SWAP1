@@ -1,0 +1,89 @@
+.search-panel{
+
+background:white;
+padding:25px;
+border-radius:20px;
+margin-top:30px;
+
+}
+
+
+.search-controls{
+
+display:flex;
+gap:15px;
+
+}
+
+
+.search-controls input,
+.search-controls select{
+
+padding:14px;
+border-radius:12px;
+border:1px solid #ddd;
+font-size:16px;
+
+}
+
+
+.search-controls button{
+
+background:#086c69;
+color:white;
+border:none;
+padding:14px 25px;
+border-radius:12px;
+cursor:pointer;
+
+}
+
+
+.skills-grid{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:25px;
+margin-top:30px;
+
+}
+
+
+
+.skill-card{
+
+background:white;
+border-radius:20px;
+padding:25px;
+box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+}
+
+
+.skill-icon{
+
+font-size:35px;
+
+}
+
+
+.skill-card h3{
+
+margin-top:15px;
+
+}
+
+
+.skill-card p{
+
+color:#777;
+
+}
+
+
+.skill-card span{
+
+color:#087f23;
+font-size:14px;
+
+}
