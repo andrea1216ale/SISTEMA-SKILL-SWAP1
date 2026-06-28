@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const profileRoutes = require('./routes/profile.routes');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/profile', profileRoutes);
 
 const PORT = Number(process.env.PORT) || 3000;
 
