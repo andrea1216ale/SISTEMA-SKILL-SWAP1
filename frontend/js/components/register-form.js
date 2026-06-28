@@ -1,5 +1,4 @@
 import { registerUser } from '../services/api.js';
-import { saveCurrentUser } from '../common/auth.js';
 
 export class RegisterForm {
   constructor(container) {
@@ -50,12 +49,22 @@ export class RegisterForm {
 
             <form id="registroForm" class="login-form register-form">
               <div class="register-form__grid">
-                <div class="register-control register-control--wide">
-                  <label for="nombre">Nombre completo</label>
+                <div class="register-control">
+                  <label for="nombres">Nombres</label>
                   <div class="login-field">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20v-2.2c0-3 2.9-5.3 6.5-5.3s6.5 2.3 6.5 5.3V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-                    <input id="nombre" type="text" autocomplete="name" placeholder="Juan Pérez" required />
+                    <input id="nombres" type="text" autocomplete="given-name" placeholder="Juan" required />
                   </div>
+                </div>
+
+                <div class="register-control">
+                  <label for="apellidoPaterno">Apellido paterno</label>
+                  <div class="login-field login-field--plain"><input id="apellidoPaterno" type="text" autocomplete="family-name" placeholder="Pérez" required /></div>
+                </div>
+
+                <div class="register-control register-control--wide">
+                  <label for="apellidoMaterno">Apellido materno (opcional)</label>
+                  <div class="login-field login-field--plain"><input id="apellidoMaterno" type="text" placeholder="García" /></div>
                 </div>
 
                 <div class="register-control register-control--wide">
@@ -83,8 +92,8 @@ export class RegisterForm {
                 </div>
 
                 <div class="register-control">
-                  <label for="edad">Edad</label>
-                  <div class="login-field login-field--plain"><input id="edad" type="number" min="13" max="120" placeholder="Ej. 24" required /></div>
+                  <label for="fechaNacimiento">Fecha de nacimiento</label>
+                  <div class="login-field login-field--plain"><input id="fechaNacimiento" type="date" autocomplete="bday" required /></div>
                 </div>
 
                 <div class="register-control">
@@ -146,19 +155,21 @@ export class RegisterForm {
       if (!form.reportValidity()) return;
 
       const usuario = {
-        nombre: this.container.querySelector('#nombre').value,
+        nombres: this.container.querySelector('#nombres').value,
+        apellido_paterno: this.container.querySelector('#apellidoPaterno').value,
+        apellido_materno: this.container.querySelector('#apellidoMaterno').value,
         correo: this.container.querySelector('#correo').value,
         password: password.value,
-        edad: Number(this.container.querySelector('#edad').value),
+        fecha_nacimiento: this.container.querySelector('#fechaNacimiento').value,
         nivel: this.container.querySelector('#nivel').value,
         idiomas: this.getCheckedValues('#idiomasOptions input[type=checkbox]'),
         habilidades: this.getCheckedValues('#habilidadesOptions input[type=checkbox]'),
       };
 
       const result = await registerUser(usuario);
-      if (result.user) {
-        saveCurrentUser(result.user);
-        window.location.href = 'dashboard.html';
+      if (result.requiere_verificacion) {
+        sessionStorage.setItem('correo_verificacion', result.correo);
+        window.location.href = `verificar.html?correo=${encodeURIComponent(result.correo)}`;
         return;
       }
       alert(result.error || 'No se pudo crear la cuenta.');

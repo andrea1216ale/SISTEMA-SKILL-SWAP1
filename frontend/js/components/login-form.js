@@ -100,6 +100,12 @@ export class LoginForm {
       };
 
       const result = await loginUser(credentials);
+      if (result.requiere_verificacion) {
+        const correo = result.correo || credentials.correo;
+        sessionStorage.setItem('correo_verificacion', correo);
+        window.location.href = `verificar.html?correo=${encodeURIComponent(correo)}`;
+        return;
+      }
       if (result.user) {
         saveCurrentUser(result.user);
         window.location.href = 'dashboard.html';
