@@ -40,7 +40,7 @@ exports.createWithProfile = async (user) => {
 
 exports.findByEmail = async (correo) => {
   const [rows] = await db.promise().query(
-    'SELECT id_usuario, nombre, correo, password FROM usuarios WHERE correo = ? LIMIT 1',
+    'SELECT id_usuario, nombre, correo, password FROM usuarios WHERE LOWER(TRIM(correo)) = ? LIMIT 1',
     [correo]
   );
   return rows[0] || null;

@@ -12,13 +12,16 @@ export function clearToken() {
 
 const USER_KEY = 'skillSwapUser';
 
-export function saveCurrentUser(user) {
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+export function saveCurrentUser(user, remember = true) {
+  clearCurrentUser();
+  const storage = remember ? localStorage : sessionStorage;
+  storage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem(USER_KEY));
+    const savedUser = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
+    return savedUser ? JSON.parse(savedUser) : null;
   } catch {
     return null;
   }
@@ -26,4 +29,5 @@ export function getCurrentUser() {
 
 export function clearCurrentUser() {
   localStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(USER_KEY);
 }

@@ -1,0 +1,26 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* Common color variables for both login and register pages */
+body[data-page="login"],
+body[data-page="register"] {
+  --ink: #102a2e;
+  --ink-soft: #536568;
+  --cream: #f7f5ef;
+  --paper: #fffefa;
+  --teal: #116b68;
+  --teal-light: #45b7a9;
+  --gold: #e8bd68;
+  min-width: 320px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "DM Sans", sans-serif;
+}

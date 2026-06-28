@@ -17,7 +17,12 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { correo, password } = req.body;
+    const correo = String(req.body.correo || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+
+    if (!correo || !password) {
+      return res.status(400).json({ error: 'Ingresa tu correo y contraseña.' });
+    }
     const user = await User.findByEmail(correo);
     if (!user) return res.status(401).json({ error: 'Credenciales inválidas.' });
 
