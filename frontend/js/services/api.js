@@ -48,3 +48,20 @@ export async function resendVerificationCode(correo) {
 export function getDashboard(userId) {
   return request(`/dashboard/${encodeURIComponent(userId)}`);
 }
+
+export function getProfile(userId) {
+  return request(`/profile/${encodeURIComponent(userId)}`);
+}
+
+export function updateProfile(userId, profile) {
+  return request(`/profile/${encodeURIComponent(userId)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profile)
+  });
+}
+
+export function searchPeople({ userId, q = '', category = '', page = 1, limit = 8 }) {
+  const params = new URLSearchParams({ userId, q, category, page, limit });
+  return request(`/search?${params.toString()}`);
+}

@@ -24,14 +24,14 @@ function icon(name) {
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 const initial = (value = '?') => escapeHtml(value.trim().charAt(0).toUpperCase() || '?');
 
-function renderSidebar(user) {
+export function renderSidebar(user, activePage = 'dashboard') {
   return `
     <aside class="dash-sidebar">
       <a class="dash-brand" href="dashboard.html"><span>${icon('spark')}</span>Skill Swap</a>
       <div class="dash-user"><span class="dash-avatar">${initial(user.nombre)}</span><div><strong>${escapeHtml(user.nombre)}</strong><small>${escapeHtml(user.correo)}</small></div></div>
       <nav class="dash-nav" aria-label="Navegación principal">
-        <a class="is-active" href="dashboard.html">${icon('home')}<span>Inicio</span></a>
-        <a href="search.html">${icon('search')}<span>Buscar</span></a>
+        <a class="${activePage === 'dashboard' ? 'is-active' : ''}" href="dashboard.html">${icon('home')}<span>Inicio</span></a>
+        <a class="${activePage === 'search' ? 'is-active' : ''}" href="search.html">${icon('search')}<span>Buscar</span></a>
         <a href="skills.html">${icon('plus')}<span>Publicar</span></a>
         <a href="exchanges.html">${icon('users')}<span>Intercambios</span></a>
         <a href="chat.html">${icon('message')}<span>Mensajes</span></a>
@@ -39,7 +39,7 @@ function renderSidebar(user) {
       </nav>
       <nav class="dash-nav dash-nav--bottom" aria-label="Cuenta">
         <a href="#notifications">${icon('bell')}<span>Notificaciones</span></a>
-        <a href="profile.html">${icon('user')}<span>Mi perfil</span></a>
+        <a class="${activePage === 'profile' ? 'is-active' : ''}" href="profile.html">${icon('user')}<span>Mi perfil</span></a>
         <button type="button" id="logoutButton">${icon('logout')}<span>Cerrar sesión</span></button>
       </nav>
     </aside>`;
