@@ -1,6 +1,7 @@
 import { renderHomePage } from './pages/home-page.js';
 import { renderLoginPage } from './pages/login-page.js';
 import { renderRegisterPage } from './pages/register-page.js';
+import { renderDashboardPage } from './pages/dashboard.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.querySelector('#app');
@@ -17,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'register':
       renderRegisterPage(app);
+      break;
+    case 'dashboard':
+      renderDashboardPage(app);
       break;
     default:
       renderHomePage(app);

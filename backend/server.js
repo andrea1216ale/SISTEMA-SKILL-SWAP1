@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', userRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.listen(3000, () => {
   console.log('Servidor iniciado en puerto 3000');

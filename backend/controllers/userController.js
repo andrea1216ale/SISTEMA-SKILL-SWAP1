@@ -1,32 +1,41 @@
+const bcrypt = require('bcrypt');
+const db = require('../database');
 const User = require('../models/userModel');
 
-exports.register = (req, res) => {
-  const user = req.body;
-
-  User.create(user, (error, result) => {
-    if (error) {
-      console.error(error);
-      return res.status(500).json({ mensaje: 'Error al registrar usuario' });
+exports.register = async (req, res) => {
+  try {
+    const user = await User.createWithProfile(req.body);
+    res.status(201).json({ mensaje: 'Usuario registrado correctamente', user });
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' });
     }
-
-    res.json({ mensaje: 'Usuario registrado correctamente' });
-  });
+    res.status(500).json({ error: 'No se pudo registrar el usuario.' });
+  }
 };
 
-exports.login = (req, res) => {
-  const { correo, password } = req.body;
+exports.login = async (req, res) => {
+  try {
+    const { correo, password } = req.body;
+    const user = await User.findByEmail(correo);
+    if (!user) return res.status(401).json({ error: 'Credenciales inválidas.' });
 
-  User.findByCredentials(correo, password, (error, results) => {
-    if (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Error al iniciar sesión' });
+    const isHash = user.password.startsWith('$2');
+    const valid = isHash ? await bcrypt.compare(password, user.password) : password === user.password;
+    if (!valid) return res.status(401).json({ error: 'Credenciales inválidas.' });
+
+    if (!isHash) {
+      const passwordHash = await bcrypt.hash(password, 10);
+      await db.promise().query('UPDATE usuarios SET password = ? WHERE id_usuario = ?', [passwordHash, user.id_usuario]);
     }
 
-    if (results.length === 0) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-
-    const user = results[0];
-    res.json({ mensaje: `Bienvenido ${user.nombre}` });
-  });
+    res.json({
+      mensaje: `Bienvenido ${user.nombre}`,
+      user: { id_usuario: user.id_usuario, nombre: user.nombre, correo: user.correo }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'No se pudo iniciar sesión.' });
+  }
 };
