@@ -6,6 +6,7 @@ body[data-page="profile"] { --p-ink:#102a2e; --p-soft:#667779; --p-line:#e2e9e5;
 .profile-card h2 { margin:0; font-size:22px; letter-spacing:-.035em; }
 .profile-card button { border:0; border-radius:11px; padding:12px 18px; color:#fff; background:var(--p-teal); font-weight:700; cursor:pointer; }
 .profile-card button.secondary { color:var(--p-teal); background:#e7f1ed; }
+.profile-back-search { padding:12px 18px; border-radius:11px; color:var(--p-teal); background:#e7f1ed; font-size:13px; font-weight:700; text-decoration:none; }
 .profile-card button:disabled { opacity:.65; cursor:wait; }
 .profile-hero { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:24px; margin-bottom:24px; }
 .profile-avatar { width:100px; height:100px; display:grid; place-items:center; border-radius:27px; color:#fff; background:linear-gradient(145deg,#116b68,#45b7a9); font-size:38px; font-weight:800; }

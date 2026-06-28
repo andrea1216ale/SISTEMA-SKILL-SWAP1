@@ -60,3 +60,8 @@ export function updateProfile(userId, profile) {
     body: JSON.stringify(profile)
   });
 }
+
+export function searchPeople({ userId, q = '', category = '', page = 1, limit = 8 }) {
+  const params = new URLSearchParams({ userId, q, category, page, limit });
+  return request(`/search?${params.toString()}`);
+}

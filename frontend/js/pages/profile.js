@@ -20,18 +20,18 @@ function skillOptions(skills, selected, type) {
     </label>`).join('');
 }
 
-function renderContent(profile) {
+function renderContent(profile, sidebarUser, isOwnProfile) {
   const name = fullName(profile);
   return `
     <div class="dash-layout profile-shell">
-      ${renderSidebar({ nombre: name, correo: profile.correo }, 'profile')}
+      ${renderSidebar(sidebarUser, isOwnProfile ? 'profile' : '')}
       <main class="profile-main">
         <section class="profile-hero profile-card">
           <div class="profile-avatar" aria-hidden="true">${escapeHtml(name.charAt(0).toUpperCase())}</div>
           <div class="profile-identity"><p>MI PERFIL</p><h1>${escapeHtml(name)}</h1><span>${escapeHtml(profile.correo)}</span>
             <div class="profile-stats"><strong>★ ${Number(profile.puntuacion || 0).toFixed(1)}</strong><span>•</span><span>${Number(profile.total_intercambios || 0)} intercambios</span></div>
           </div>
-          <button type="button" id="editProfile">✎ Editar perfil</button>
+          ${isOwnProfile ? '<button type="button" id="editProfile">✎ Editar perfil</button>' : '<a class="profile-back-search" href="search.html">← Volver a búsqueda</a>'}
         </section>
 
         <section id="profileView">
@@ -45,7 +45,7 @@ function renderContent(profile) {
           </div>
         </section>
 
-        <form id="profileForm" class="profile-card profile-editor" hidden>
+        ${isOwnProfile ? `<form id="profileForm" class="profile-card profile-editor" hidden>
           <header><div><p>EDITAR PERFIL</p><h2>Actualiza cómo te presentas</h2></div><button type="button" class="secondary" id="cancelProfile">Cancelar</button></header>
           <label class="profile-description-field" for="descriptionInput">Descripción
             <textarea id="descriptionInput" maxlength="500" rows="6" placeholder="Cuéntanos qué te gusta enseñar y aprender…">${escapeHtml(profile.descripcion || '')}</textarea>
@@ -56,7 +56,7 @@ function renderContent(profile) {
             <fieldset><legend>Quiero aprender</legend><p>Selecciona lo que estás buscando.</p><div class="profile-options">${skillOptions(profile.habilidadesDisponibles, profile.habilidadesBusca, 'busca')}</div></fieldset>
           </div>
           <div class="profile-actions"><button type="button" class="secondary" id="cancelProfileBottom">Cancelar</button><button type="submit" id="saveProfile">Guardar cambios</button></div>
-        </form>
+        </form>` : ''}
       </main>
     </div>`;
 }
@@ -72,18 +72,24 @@ export async function renderProfilePage(container) {
     return;
   }
 
-  container.innerHTML = '<div class="profile-loading"><span></span><p>Cargando tu perfil…</p></div>';
-  const profile = await getProfile(currentUser.id_usuario);
+  const requestedId = Number(new URLSearchParams(window.location.search).get('userId'));
+  const profileUserId = Number.isInteger(requestedId) && requestedId > 0 ? requestedId : Number(currentUser.id_usuario);
+  const isOwnProfile = profileUserId === Number(currentUser.id_usuario);
+  container.innerHTML = '<div class="profile-loading"><span></span><p>Cargando perfil…</p></div>';
+  const profile = await getProfile(profileUserId);
   if (profile.error) {
     container.innerHTML = `<div class="profile-error"><h1>No pudimos cargar tu perfil</h1><p>${escapeHtml(profile.error)}</p><a href="dashboard.html">Volver al panel</a></div>`;
     return;
   }
 
-  container.innerHTML = renderContent(profile);
+  const sidebarName = currentUser.nombre || [currentUser.nombres, currentUser.apellido_paterno].filter(Boolean).join(' ') || 'Usuario';
+  container.innerHTML = renderContent(profile, { nombre: sidebarName, correo: currentUser.correo || '' }, isOwnProfile);
   container.querySelector('#logoutButton').addEventListener('click', () => {
     clearCurrentUser();
     window.location.href = 'login.html';
   });
+
+  if (!isOwnProfile) return;
 
   const view = container.querySelector('#profileView');
   const form = container.querySelector('#profileForm');
