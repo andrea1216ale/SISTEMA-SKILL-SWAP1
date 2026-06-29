@@ -5,6 +5,7 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const profileRoutes = require('./routes/profile.routes');
 const searchRoutes = require('./routes/search.routes');
 const publicacionRoutes = require('./routes/publicacion.routes');
+const intercambioRoutes = require('./routes/intercambio.routes');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api', publicacionRoutes);
+app.use('/api/intercambios', intercambioRoutes);
 app.use(errorMiddleware);
 
 const PORT = Number(process.env.PORT) || 3000;

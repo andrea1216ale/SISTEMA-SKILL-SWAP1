@@ -5,6 +5,7 @@ import { renderDashboardPage } from './pages/dashboard.js';
 import { renderProfilePage } from './pages/profile.js';
 import { renderSearchPage } from './pages/search.js';
 import { renderFeedPage } from './pages/feed.js';
+import { renderExchangesPage } from './pages/exchanges.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.querySelector('#app');
@@ -33,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'feed':
       renderFeedPage(app);
+      break;
+    case 'exchanges':
+      renderExchangesPage(app);
       break;
     default:
       renderHomePage(app);
