@@ -32,7 +32,7 @@ export function renderSidebar(user, activePage = 'dashboard') {
       <nav class="dash-nav" aria-label="Navegación principal">
         <a class="${activePage === 'dashboard' ? 'is-active' : ''}" href="dashboard.html">${icon('home')}<span>Inicio</span></a>
         <a class="${activePage === 'search' ? 'is-active' : ''}" href="search.html">${icon('search')}<span>Buscar</span></a>
-        <a href="skills.html">${icon('plus')}<span>Publicar</span></a>
+        <a class="${activePage === 'feed' ? 'is-active' : ''}" href="feed.html">${icon('plus')}<span>Comunidad</span></a>
         <a href="exchanges.html">${icon('users')}<span>Intercambios</span></a>
         <a href="chat.html">${icon('message')}<span>Mensajes</span></a>
         <a href="ratings.html">${icon('star')}<span>Calificaciones</span></a>

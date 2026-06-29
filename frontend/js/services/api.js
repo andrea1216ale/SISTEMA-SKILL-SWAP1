@@ -3,7 +3,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
 async function request(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-    const data = await response.json();
+    const data = response.status === 204 ? {} : await response.json();
     if (!response.ok) return { ...data, error: data.error || 'Ocurrió un error en el servidor.' };
     return data;
   } catch {
@@ -31,6 +31,10 @@ export async function loginUser(credentials) {
     body: JSON.stringify(credentials)
   });
 
+}
+
+function authenticatedOptions(userId, options = {}) {
+  return { ...options, headers: { 'Content-Type': 'application/json', 'X-User-Id': String(userId), ...(options.headers || {}) } };
 }
 
 export async function verifyEmail(data) {
@@ -65,3 +69,17 @@ export function searchPeople({ userId, q = '', category = '', page = 1, limit = 
   const params = new URLSearchParams({ userId, q, category, page, limit });
   return request(`/search?${params.toString()}`);
 }
+
+export function getFeed(filters = {}, userId = 0) {
+  const params = new URLSearchParams(Object.entries(filters).filter(([, value]) => value));
+  return request(`/publicaciones?${params}`, { headers: { 'X-User-Id': String(userId) } });
+}
+export function getFeedSkills() { return request('/habilidades-feed'); }
+export function createPost(userId, post) { return request('/publicaciones', authenticatedOptions(userId, { method: 'POST', body: JSON.stringify(post) })); }
+export function updatePost(userId, id, post) { return request(`/publicaciones/${id}`, authenticatedOptions(userId, { method: 'PUT', body: JSON.stringify(post) })); }
+export function deletePost(userId, id) { return request(`/publicaciones/${id}`, authenticatedOptions(userId, { method: 'DELETE' })); }
+export function getComments(id) { return request(`/publicaciones/${id}/comentarios`); }
+export function addComment(userId, id, comentario) { return request(`/publicaciones/${id}/comentarios`, authenticatedOptions(userId, { method: 'POST', body: JSON.stringify({ comentario }) })); }
+export function reactToPost(userId, id, tipo) { return request(`/publicaciones/${id}/reacciones`, authenticatedOptions(userId, { method: 'POST', body: JSON.stringify({ tipo }) })); }
+export function toggleSavedPost(userId, id) { return request(`/publicaciones/${id}/guardar`, authenticatedOptions(userId, { method: 'POST' })); }
+export function getSavedPosts(userId) { return request(`/usuarios/${userId}/publicaciones-guardadas`, authenticatedOptions(userId)); }

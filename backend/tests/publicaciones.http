@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:3000/api
+@userId = 1
+@postId = 1
+@commentId = 1
+
+### Listar el feed (filtros: tipo, habilidad, categoria, page, limit)
+GET {{baseUrl}}/publicaciones?tipo=OFREZCO&limit=20
+X-User-Id: {{userId}}
+
+### Crear
+POST {{baseUrl}}/publicaciones
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{"tipo":"OFREZCO","titulo":"Enseño React desde cero","descripcion":"Componentes, hooks y APIs.","nivel":"INTERMEDIO","modalidad":"VIRTUAL","disponibilidad":"Lunes a viernes 7pm-9pm","habilidades":[1,2],"archivos":[{"url_archivo":"https://example.com/react.png","tipo":"IMAGEN"}]}
+
+### Detalle
+GET {{baseUrl}}/publicaciones/{{postId}}
+X-User-Id: {{userId}}
+
+### Comentar
+POST {{baseUrl}}/publicaciones/{{postId}}/comentarios
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{"comentario":"¿Qué conocimientos previos necesito?"}
+
+### Listar comentarios
+GET {{baseUrl}}/publicaciones/{{postId}}/comentarios
+
+### Eliminar comentario propio
+DELETE {{baseUrl}}/comentarios/{{commentId}}
+X-User-Id: {{userId}}
+
+### Reaccionar (repetir quita la reaccion)
+POST {{baseUrl}}/publicaciones/{{postId}}/reacciones
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{"tipo":"ME_INTERESA"}
+
+### Guardar (repetir quita el guardado)
+POST {{baseUrl}}/publicaciones/{{postId}}/guardar
+X-User-Id: {{userId}}
+
+### Ver guardados
+GET {{baseUrl}}/usuarios/{{userId}}/publicaciones-guardadas
+X-User-Id: {{userId}}
+
+### Eliminacion logica
+DELETE {{baseUrl}}/publicaciones/{{postId}}
+X-User-Id: {{userId}}
