@@ -7,6 +7,7 @@ import { renderSearchPage } from './pages/search.js';
 import { renderFeedPage } from './pages/feed.js';
 import { renderExchangesPage } from './pages/exchanges.js';
 import { renderChatPage } from './pages/chat.js';
+import { mountSkillbot } from './components/skillbot-widget.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.querySelector('#app');
@@ -44,5 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     default:
       renderHomePage(app);
+  }
+
+  if (!['login', 'register', 'home'].includes(page)) {
+    mountSkillbot();
   }
 });
