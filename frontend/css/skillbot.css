@@ -1,0 +1,37 @@
+.skillbot { position: fixed; right: 28px; bottom: 24px; z-index: 1000; font-family: "DM Sans", Arial, sans-serif; }
+.skillbot *, .skillbot *::before, .skillbot *::after { box-sizing: border-box; }
+.skillbot-toggle { position: relative; width: 68px; height: 68px; display: grid; place-items: center; border: 0; border-radius: 23px; color: #fff; background: linear-gradient(135deg, #a63cff, #f22e98); box-shadow: 0 18px 38px rgba(155, 49, 219, .32); cursor: pointer; transition: transform .2s ease; }
+.skillbot-toggle:hover { transform: translateY(-3px); }
+.skillbot-toggle svg { width: 33px; height: 33px; }
+.skillbot-toggle span { position: absolute; top: -5px; right: -4px; width: 19px; height: 19px; border: 3px solid #fff; border-radius: 50%; background: #0fda84; }
+.skillbot-panel { position: absolute; right: 0; bottom: 82px; width: min(380px, calc(100vw - 32px)); height: min(520px, calc(100vh - 130px)); overflow: hidden; border: 1px solid #eadff0; border-radius: 24px; background: #fff; box-shadow: 0 24px 65px rgba(42, 19, 58, .2); animation: skillbot-in .2s ease-out; }
+.skillbot-panel[hidden] { display: none; }
+@keyframes skillbot-in { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+.skillbot-header { height: 78px; display: flex; align-items: center; gap: 12px; padding: 14px 17px; color: #fff; background: linear-gradient(120deg, #963cff, #ec319c); }
+.skillbot-avatar { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; background: rgba(255,255,255,.2); }
+.skillbot-avatar svg { width: 28px; }
+.skillbot-header > div { flex: 1; }
+.skillbot-header strong, .skillbot-header small { display: block; }
+.skillbot-header strong { font: 700 17px "Manrope", sans-serif; }
+.skillbot-header small { margin-top: 3px; font-size: 12px; opacity: .9; }
+.skillbot-header small i { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: #47f2aa; }
+.skillbot-close { width: 36px; height: 36px; border: 0; border-radius: 11px; color: #fff; background: transparent; font-size: 27px; line-height: 1; cursor: pointer; }
+.skillbot-close:hover { background: rgba(255,255,255,.15); }
+.skillbot-messages { height: calc(100% - 146px); display: flex; flex-direction: column; gap: 11px; overflow-y: auto; padding: 18px; background: #fbf8fc; scroll-behavior: smooth; }
+.skillbot-message { max-width: 82%; padding: 11px 14px; border-radius: 16px; color: #18233b; background: #fff; box-shadow: 0 3px 12px rgba(31, 18, 43, .07); font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.skillbot-message--bot { align-self: flex-start; border-bottom-left-radius: 5px; }
+.skillbot-message--user { align-self: flex-end; border-bottom-right-radius: 5px; color: #fff; background: linear-gradient(135deg, #9c3eff, #e835a3); }
+.skillbot-message--error { align-self: flex-start; color: #a12844; background: #fff0f3; }
+.skillbot-form { height: 68px; display: flex; align-items: center; gap: 9px; padding: 10px 13px; border-top: 1px solid #eee5f0; background: #fff; }
+.skillbot-form input { min-width: 0; height: 45px; flex: 1; padding: 0 14px; border: 1px solid #ded4e2; border-radius: 13px; outline: none; font: 13px "DM Sans", sans-serif; }
+.skillbot-form input:focus { border-color: #b23dea; box-shadow: 0 0 0 3px rgba(178,61,234,.1); }
+.skillbot-form button { width: 45px; height: 45px; display: grid; place-items: center; flex: 0 0 45px; border: 0; border-radius: 13px; color: #fff; background: linear-gradient(135deg, #9a3dff, #ed319c); cursor: pointer; }
+.skillbot-form button svg { width: 21px; }
+.skillbot-form.is-sending button { opacity: .55; }
+.skillbot-typing { align-self: flex-start; display: flex; gap: 4px; padding: 13px 16px; border-radius: 16px; background: #fff; box-shadow: 0 3px 12px rgba(31,18,43,.07); }
+.skillbot-typing span { width: 6px; height: 6px; border-radius: 50%; background: #b64be2; animation: skillbot-dot 1s infinite alternate; }
+.skillbot-typing span:nth-child(2) { animation-delay: .2s; }
+.skillbot-typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes skillbot-dot { to { opacity: .25; transform: translateY(-3px); } }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 600px) { .skillbot { right: 16px; bottom: 16px; } .skillbot-toggle { width: 60px; height: 60px; border-radius: 20px; } .skillbot-panel { position: fixed; inset: 12px 12px 88px; width: auto; height: auto; } }

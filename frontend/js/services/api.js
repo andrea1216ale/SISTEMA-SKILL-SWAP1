@@ -166,3 +166,11 @@ export function aceptarSolicitud(userId, id) {
 export function rechazarSolicitud(userId, id) {
   return request(`/intercambios/${id}/rechazar`, authenticatedOptions(userId, { method: 'PATCH' }));
 }
+
+export function enviarMensajeChatbot(mensaje) {
+  return request('/chatbot/mensaje', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mensaje })
+  });
+}

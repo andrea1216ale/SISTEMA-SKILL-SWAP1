@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -9,6 +12,7 @@ const searchRoutes = require('./routes/search.routes');
 const publicacionRoutes = require('./routes/publicacion.routes');
 const intercambioRoutes = require('./routes/intercambio.routes');
 const chatRoutes = require('./routes/chatRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 const configureSocket = require('./services/socket.service');
 const errorMiddleware = require('./middlewares/error.middleware');
 
@@ -33,6 +37,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api', publicacionRoutes);
 app.use('/api/intercambios', intercambioRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 app.use(errorMiddleware);
 
 const PORT = Number(process.env.PORT) || 3000;
