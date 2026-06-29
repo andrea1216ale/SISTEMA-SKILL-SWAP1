@@ -155,6 +155,10 @@ export function obtenerSesionIntercambio(userId, id) {
   return request(`/intercambios/${id}/sesion`, authenticatedOptions(userId));
 }
 
+export function obtenerOCrearConversacion(userId, id) {
+  return request(`/intercambios/${id}/conversacion`, authenticatedOptions(userId, { method: 'POST' }));
+}
+
 export function aceptarSolicitud(userId, id) {
   return request(`/intercambios/${id}/aceptar`, authenticatedOptions(userId, { method: 'PATCH' }));
 }

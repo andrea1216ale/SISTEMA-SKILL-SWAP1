@@ -1,6 +1,7 @@
 import {
   aceptarSolicitud as aceptarSolicitudApi,
   obtenerDetalleIntercambio,
+  obtenerOCrearConversacion as obtenerOCrearConversacionApi,
   obtenerSesionIntercambio as obtenerSesionIntercambioApi,
   obtenerSolicitudes as obtenerSolicitudesApi,
   rechazarSolicitud as rechazarSolicitudApi,
@@ -29,4 +30,8 @@ export function obtenerDetalleSolicitud(userId, idIntercambio) {
 
 export function obtenerSesionIntercambio(userId, idIntercambio) {
   return obtenerSesionIntercambioApi(userId, idIntercambio);
+}
+
+export function obtenerOCrearConversacion(userId, idIntercambio) {
+  return obtenerOCrearConversacionApi(userId, idIntercambio);
 }

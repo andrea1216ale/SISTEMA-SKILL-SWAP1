@@ -290,6 +290,18 @@ body[data-page="exchanges"] {
   box-shadow: 0 9px 22px rgba(17, 107, 104, .18);
 }
 
+.exchange-btn--chat {
+  color: var(--d-teal);
+  border: 1px solid #bcd8d1;
+  background: #edf7f3;
+}
+
+.exchange-btn--chat:hover {
+  border-color: var(--d-teal);
+  background: #dff3ed;
+  transform: translateY(-1px);
+}
+
 .exchange-btn--primary:hover,
 .exchange-btn--calendar:hover {
   transform: translateY(-1px);

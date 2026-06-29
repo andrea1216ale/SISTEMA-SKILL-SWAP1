@@ -6,6 +6,7 @@ import { renderProfilePage } from './pages/profile.js';
 import { renderSearchPage } from './pages/search.js';
 import { renderFeedPage } from './pages/feed.js';
 import { renderExchangesPage } from './pages/exchanges.js';
+import { renderChatPage } from './pages/chat.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.querySelector('#app');
@@ -37,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'exchanges':
       renderExchangesPage(app);
+      break;
+    case 'chat':
+      renderChatPage(app);
       break;
     default:
       renderHomePage(app);

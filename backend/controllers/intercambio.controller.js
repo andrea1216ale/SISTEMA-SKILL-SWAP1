@@ -103,3 +103,14 @@ exports.obtenerSesion = async (req, res, next) => {
     handleKnownError(error, res, next);
   }
 };
+
+exports.obtenerOCrearConversacion = async (req, res, next) => {
+  const id = idFrom(req.params.id);
+  if (!id) return invalidId(res);
+  try {
+    const conversacion = await service.obtenerOCrearConversacion(id, req.user.id_usuario);
+    res.status(201).json({ success: true, message: 'Conversacion lista.', data: conversacion });
+  } catch (error) {
+    handleKnownError(error, res, next);
+  }
+};

@@ -9,6 +9,7 @@ router.post('/solicitar', intercambioController.solicitarIntercambio);
 router.get('/solicitudes', intercambioController.obtenerSolicitudes);
 router.get('/:id', intercambioController.obtenerDetalle);
 router.get('/:id/sesion', intercambioController.obtenerSesion);
+router.post('/:id/conversacion', intercambioController.obtenerOCrearConversacion);
 router.patch('/:id/aceptar', intercambioController.aceptarSolicitud);
 router.patch('/:id/rechazar', intercambioController.rechazarSolicitud);
 

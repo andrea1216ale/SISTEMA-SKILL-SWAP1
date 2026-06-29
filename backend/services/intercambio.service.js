@@ -128,3 +128,12 @@ exports.obtenerSesion = async (idIntercambio, idUsuario) => {
 
   return Intercambio.obtenerOCrearSesion(idIntercambio);
 };
+
+exports.obtenerOCrearConversacion = async (idIntercambio, idUsuario) => {
+  const solicitud = await Intercambio.obtenerDetalle(idIntercambio, idUsuario);
+  if (!solicitud) throw createError(404, 'Solicitud no encontrada.');
+  if (solicitud.estado !== 'ACEPTADA') {
+    throw createError(409, 'El chat solo esta disponible para intercambios aceptados.');
+  }
+  return Intercambio.obtenerOCrearConversacion(idIntercambio);
+};

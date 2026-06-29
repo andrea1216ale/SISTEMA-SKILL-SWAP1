@@ -118,6 +118,45 @@ const Intercambio = {
     return result.affectedRows > 0;
   },
 
+  obtenerOCrearConversacion: async (idIntercambio) => {
+    const connection = db.promise();
+    try {
+      await connection.beginTransaction();
+      const [intercambios] = await connection.query(
+        'SELECT id_intercambio FROM intercambios WHERE id_intercambio = ? FOR UPDATE',
+        [idIntercambio]
+      );
+      if (!intercambios[0]) {
+        await connection.rollback();
+        return null;
+      }
+      const [existentes] = await connection.query(
+        `SELECT id_conversacion, id_intercambio, estado, fecha_creacion
+         FROM conversaciones WHERE id_intercambio = ? LIMIT 1`,
+        [idIntercambio]
+      );
+      if (existentes[0]) {
+        await connection.commit();
+        return existentes[0];
+      }
+      const [result] = await connection.query(
+        `INSERT INTO conversaciones (id_intercambio, estado, fecha_creacion)
+         VALUES (?, 'ACTIVA', NOW())`,
+        [idIntercambio]
+      );
+      const [creadas] = await connection.query(
+        `SELECT id_conversacion, id_intercambio, estado, fecha_creacion
+         FROM conversaciones WHERE id_conversacion = ? LIMIT 1`,
+        [result.insertId]
+      );
+      await connection.commit();
+      return creadas[0] || null;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    }
+  },
+
   obtenerOCrearSesion: async (idIntercambio) => {
     const [sesiones] = await db.promise().query(
       `SELECT

@@ -1,6 +1,7 @@
 import { getCurrentUser, clearCurrentUser } from '../common/auth.js';
 import {
   aceptarSolicitud,
+  obtenerOCrearConversacion,
   obtenerSesionIntercambio,
   obtenerSolicitudes,
   rechazarSolicitud
@@ -22,6 +23,7 @@ const icons = {
   done: '<path d="m4 12 4 4L18 6"/><path d="m12 16 1 1 7-8"/>',
   minus: '<path d="M5 12h14"/>',
   calendar: '<path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>',
+  message: '<path d="M4 5h16v12H8l-4 4V5Z"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/>'
 };
 
@@ -83,6 +85,9 @@ function renderAcciones(solicitud) {
       <div class="exchange-actions">
         <button class="exchange-btn exchange-btn--calendar" type="button" data-action="calendar" data-id="${solicitud.id_intercambio}">
           ${icon('calendar')}Ver Calendario
+        </button>
+        <button class="exchange-btn exchange-btn--chat" type="button" data-action="chat" data-id="${solicitud.id_intercambio}">
+          ${icon('message')}Ir al chat
         </button>
       </div>
     `;
@@ -287,6 +292,16 @@ export async function renderExchangesPage(container) {
     if (action === 'calendar') {
       button.disabled = false;
       abrirCalendario(id);
+    }
+
+    if (action === 'chat') {
+      const response = await obtenerOCrearConversacion(user.id_usuario, id);
+      if (!response.success || !response.data?.id_conversacion) {
+        button.disabled = false;
+        showFeedback(container, response.message || response.error || 'No se pudo abrir el chat.', 'error');
+        return;
+      }
+      location.href = `chat.html?idConversacion=${response.data.id_conversacion}`;
     }
   });
 
