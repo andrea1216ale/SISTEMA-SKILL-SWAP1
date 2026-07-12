@@ -90,6 +90,18 @@ const ChatModel = {
     return rows[0] || null;
   },
 
+  obtenerParticipantes: async (idConversacion) => {
+    const [rows] = await db.promise().query(
+      `SELECT c.id_conversacion, i.id_intercambio, i.usuario_envia, i.usuario_recibe
+       FROM conversaciones c
+       INNER JOIN intercambios i ON i.id_intercambio = c.id_intercambio
+       WHERE c.id_conversacion = ?
+       LIMIT 1`,
+      [idConversacion]
+    );
+    return rows[0] || null;
+  },
+
   marcarLeido: async (idMensaje, idUsuario) => {
     const [result] = await db.promise().query(
       `UPDATE mensajes m

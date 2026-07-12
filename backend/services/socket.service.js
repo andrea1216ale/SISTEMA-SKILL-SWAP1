@@ -1,4 +1,5 @@
 const ChatModel = require('../models/chatModel');
+const notificacionService = require('./notificacion.service');
 
 const parseId = (value) => {
   const id = Number(value);
@@ -50,6 +51,26 @@ module.exports = (io) => {
       if (idEmisor !== socket.userId) return callback?.(socketError('Emisor no valido.', 'FORBIDDEN'));
       if (!mensaje || mensaje.length > 5000) return callback?.(socketError('El mensaje debe tener entre 1 y 5000 caracteres.'));
       const guardado = await ChatModel.crearMensaje({ idConversacion, idEmisor, mensaje });
+      const participantes = await ChatModel.obtenerParticipantes(idConversacion);
+      const receptor = participantes
+        ? (Number(participantes.usuario_envia) === idEmisor ? participantes.usuario_recibe : participantes.usuario_envia)
+        : null;
+      if (receptor) {
+        notificacionService.crearNotificacion({
+          id_usuario: receptor,
+          usuario_origen: idEmisor,
+          tipo: 'CHAT',
+          evento: 'NUEVO_MENSAJE',
+          titulo: 'Nuevo mensaje',
+          mensaje: mensaje.length > 120 ? `${mensaje.slice(0, 117)}...` : mensaje,
+          prioridad: 'MEDIA',
+          ruta: 'chat.html',
+          texto_accion: 'Ver chat',
+          id_intercambio: participantes.id_intercambio,
+          id_mensaje: guardado.id_mensaje,
+          clave_agrupacion: `CHAT:${idConversacion}:${idEmisor}`
+        }).catch((error) => console.error('No se pudo crear notificacion de chat:', error.message));
+      }
       io.to(`conversation_${idConversacion}`).emit('newMessage', guardado);
       callback?.({ success: true, data: guardado });
     }));

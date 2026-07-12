@@ -1,4 +1,5 @@
 const Intercambio = require('../models/intercambio.model');
+const notificacionService = require('./notificacion.service');
 
 const createError = (status, message) => ({
   success: false,
@@ -88,6 +89,20 @@ exports.solicitarIntercambio = async (usuarioEnvia, payload) => {
     mensaje
   });
 
+  notificacionService.crearNotificacion({
+    id_usuario: idUsuarioRecibe,
+    usuario_origen: usuarioEnvia,
+    tipo: 'INTERCAMBIO',
+    evento: 'SOLICITUD_INTERCAMBIO',
+    titulo: 'Nuevo intercambio solicitado',
+    mensaje: mensaje || 'Quiere iniciar un intercambio contigo.',
+    prioridad: 'MEDIA',
+    ruta: 'exchanges.html',
+    texto_accion: 'Ver solicitud',
+    id_intercambio: solicitud.id_intercambio,
+    clave_agrupacion: `INTERCAMBIO_SOLICITUD:${idUsuarioRecibe}:${usuarioEnvia}`
+  }).catch((error) => console.error('No se pudo crear notificacion de intercambio:', error.message));
+
   return {
     success: true,
     message: 'Solicitud de intercambio enviada correctamente.',
@@ -123,10 +138,24 @@ exports.aceptarSolicitud = async (idIntercambio, usuarioRecibe) => {
     throw createError(409, 'No se pudo aceptar la solicitud.');
   }
 
+  const data = await Intercambio.obtenerDetalle(idIntercambio, usuarioRecibe);
+  notificacionService.crearNotificacion({
+    id_usuario: data.usuario_envia,
+    usuario_origen: usuarioRecibe,
+    tipo: 'INTERCAMBIO',
+    evento: 'INTERCAMBIO_ACEPTADO',
+    titulo: 'Intercambio aceptado',
+    mensaje: `Tu solicitud de ${data.nombre_habilidad || 'habilidad'} fue aceptada.`,
+    prioridad: 'ALTA',
+    ruta: 'chat.html',
+    texto_accion: 'Ver chat',
+    id_intercambio: idIntercambio
+  }).catch((error) => console.error('No se pudo crear notificacion de aceptacion:', error.message));
+
   return {
     success: true,
     message: 'Solicitud aceptada correctamente.',
-    data: await Intercambio.obtenerDetalle(idIntercambio, usuarioRecibe)
+    data
   };
 };
 
@@ -150,10 +179,24 @@ exports.rechazarSolicitud = async (idIntercambio, usuarioRecibe) => {
     throw createError(409, 'No se pudo rechazar la solicitud.');
   }
 
+  const data = await Intercambio.obtenerDetalle(idIntercambio, usuarioRecibe);
+  notificacionService.crearNotificacion({
+    id_usuario: data.usuario_envia,
+    usuario_origen: usuarioRecibe,
+    tipo: 'INTERCAMBIO',
+    evento: 'INTERCAMBIO_RECHAZADO',
+    titulo: 'Intercambio rechazado',
+    mensaje: `Tu solicitud de ${data.nombre_habilidad || 'habilidad'} fue rechazada.`,
+    prioridad: 'BAJA',
+    ruta: 'exchanges.html',
+    texto_accion: 'Ver intercambios',
+    id_intercambio: idIntercambio
+  }).catch((error) => console.error('No se pudo crear notificacion de rechazo:', error.message));
+
   return {
     success: true,
     message: 'Solicitud rechazada correctamente.',
-    data: await Intercambio.obtenerDetalle(idIntercambio, usuarioRecibe)
+    data
   };
 };
 
@@ -172,7 +215,27 @@ exports.obtenerSesion = async (idIntercambio, idUsuario) => {
     throw createError(409, 'El calendario solo esta disponible para solicitudes aceptadas.');
   }
 
-  return Intercambio.obtenerOCrearSesion(idIntercambio);
+  const sesion = await Intercambio.obtenerOCrearSesion(idIntercambio);
+  const otroUsuario = Number(solicitud.usuario_envia) === Number(idUsuario)
+    ? solicitud.usuario_recibe
+    : solicitud.usuario_envia;
+
+  notificacionService.crearNotificacion({
+    id_usuario: otroUsuario,
+    usuario_origen: idUsuario,
+    tipo: 'SESION',
+    evento: 'SESION_PROGRAMADA',
+    titulo: 'Sesion programada',
+    mensaje: 'Ya tienes una sesion asociada a tu intercambio.',
+    prioridad: 'ALTA',
+    ruta: 'exchanges.html',
+    texto_accion: 'Ver detalles',
+    id_intercambio: idIntercambio,
+    id_sesion: sesion.id_sesion,
+    clave_agrupacion: `SESION:${sesion.id_sesion}`
+  }).catch((error) => console.error('No se pudo crear notificacion de sesion:', error.message));
+
+  return sesion;
 };
 
 exports.obtenerOCrearConversacion = async (idIntercambio, idUsuario) => {
@@ -194,9 +257,27 @@ exports.finalizarIntercambio = async (idIntercambio, idUsuario) => {
   const finalizado = await Intercambio.finalizar(idIntercambio, idUsuario);
   if (!finalizado) throw createError(409, 'No se pudo finalizar el intercambio.');
 
+  const data = await Intercambio.obtenerDetalle(idIntercambio, idUsuario);
+  const otroUsuario = Number(data.usuario_envia) === Number(idUsuario)
+    ? data.usuario_recibe
+    : data.usuario_envia;
+
+  notificacionService.crearNotificacion({
+    id_usuario: otroUsuario,
+    usuario_origen: idUsuario,
+    tipo: 'INTERCAMBIO',
+    evento: 'INTERCAMBIO_FINALIZADO',
+    titulo: 'Intercambio finalizado',
+    mensaje: 'Tu intercambio fue marcado como finalizado. Puedes dejar una calificacion.',
+    prioridad: 'MEDIA',
+    ruta: 'ratings.html',
+    texto_accion: 'Calificar',
+    id_intercambio: idIntercambio
+  }).catch((error) => console.error('No se pudo crear notificacion de finalizacion:', error.message));
+
   return {
     success: true,
     message: 'Intercambio finalizado correctamente.',
-    data: await Intercambio.obtenerDetalle(idIntercambio, idUsuario)
+    data
   };
 };

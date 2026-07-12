@@ -38,7 +38,7 @@ export function renderSidebar(user, activePage = 'dashboard') {
         <a class="${activePage === 'ratings' ? 'is-active' : ''}" href="ratings.html">${icon('star')}<span>Calificaciones</span></a>
       </nav>
       <nav class="dash-nav dash-nav--bottom" aria-label="Cuenta">
-        <a href="#notifications">${icon('bell')}<span>Notificaciones</span></a>
+        <a class="${activePage === 'notifications' ? 'is-active' : ''}" href="notifications.html">${icon('bell')}<span>Notificaciones</span></a>
         <a class="${activePage === 'profile' ? 'is-active' : ''}" href="profile.html">${icon('user')}<span>Mi perfil</span></a>
         <button type="button" id="logoutButton">${icon('logout')}<span>Cerrar sesión</span></button>
       </nav>

@@ -1,4 +1,5 @@
 const Calificacion = require('../models/calificacion.model');
+const notificacionService = require('./notificacion.service');
 
 const createError = (status, message) => ({
   success: false,
@@ -73,6 +74,20 @@ exports.crearCalificacion = async (usuarioCalificador, payload) => {
     puntuacion,
     comentario
   });
+
+  notificacionService.crearNotificacion({
+    id_usuario: usuarioEvaluado,
+    usuario_origen: usuarioCalificador,
+    tipo: 'CALIFICACION',
+    evento: 'NUEVA_CALIFICACION',
+    titulo: 'Nueva calificacion',
+    mensaje: `Recibiste ${puntuacion} estrellas.${comentario ? ` "${comentario.slice(0, 120)}"` : ''}`,
+    prioridad: 'MEDIA',
+    ruta: 'ratings.html',
+    texto_accion: 'Ver calificacion',
+    id_intercambio: idIntercambio,
+    id_calificacion: calificacion.id_calificacion
+  }).catch((error) => console.error('No se pudo crear notificacion de calificacion:', error.message));
 
   return {
     success: true,
