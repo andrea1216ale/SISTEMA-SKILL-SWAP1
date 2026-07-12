@@ -58,6 +58,33 @@ body[data-page="ratings"] {
   line-height: 1.55;
 }
 
+.ratings-filter {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--r-line);
+  border-radius: 8px;
+  background: #f4f7f3;
+}
+
+.ratings-filter button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 12px;
+  color: var(--r-soft);
+  background: transparent;
+  font: 800 12px "DM Sans", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ratings-filter button.is-active {
+  color: #fff;
+  background: var(--r-teal);
+}
+
 .ratings-content {
   display: grid;
   gap: 20px;
@@ -455,6 +482,8 @@ body[data-page="ratings"] {
   .ratings-heading { display: block; }
   .ratings-metrics { grid-template-columns: 1fr; }
   .ratings-section__head { display: block; }
+  .ratings-filter { width: 100%; margin-top: 16px; }
+  .ratings-filter button { flex: 1; }
   .rating-card { grid-template-columns: 1fr; gap: 14px; padding: 18px; }
   .rating-actions { min-width: 0; justify-content: stretch; }
   .rating-request { flex: 1 1 100%; width: 100%; }

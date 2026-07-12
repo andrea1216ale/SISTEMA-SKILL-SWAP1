@@ -171,10 +171,12 @@ const Calificacion = {
       ? [
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual
         ]
       : [
           idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual
@@ -190,6 +192,17 @@ const Calificacion = {
          COUNT(c.id_calificacion) AS total_calificaciones,
          ${chatExists} AS han_chateado,
          (${calificableExchangeSql}) AS id_intercambio_calificable,
+         EXISTS (
+           SELECT 1
+           FROM calificaciones cal_done
+           INNER JOIN intercambios inter_done ON inter_done.id_intercambio = cal_done.id_intercambio
+           WHERE cal_done.usuario_calificador = ?
+             AND cal_done.usuario_evaluado = u.id_usuario
+             AND (
+               (inter_done.usuario_envia = ? AND inter_done.usuario_recibe = u.id_usuario)
+               OR (inter_done.usuario_recibe = ? AND inter_done.usuario_envia = u.id_usuario)
+             )
+         ) AS ya_calificado_por_mi,
          (
            SELECT h.id_habilidad
            FROM usuario_habilidad uh
