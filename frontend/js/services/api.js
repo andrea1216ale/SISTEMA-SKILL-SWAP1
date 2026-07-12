@@ -189,3 +189,41 @@ export function enviarMensajeChatbot(mensaje) {
     body: JSON.stringify({ mensaje })
   });
 }
+
+export function obtenerNotificaciones(userId, filters = {}) {
+  const params = new URLSearchParams(Object.entries(filters).filter(([, value]) => value !== '' && value != null));
+  return request(`/notificaciones?${params.toString()}`, authenticatedOptions(userId));
+}
+
+export function obtenerResumenNotificaciones(userId) {
+  return request('/notificaciones/resumen', authenticatedOptions(userId));
+}
+
+export function marcarNotificacionLeida(userId, idNotificacion) {
+  return request(`/notificaciones/${encodeURIComponent(idNotificacion)}/leida`, authenticatedOptions(userId, {
+    method: 'PATCH'
+  }));
+}
+
+export function marcarTodasNotificacionesLeidas(userId) {
+  return request('/notificaciones/leer-todas', authenticatedOptions(userId, {
+    method: 'PATCH'
+  }));
+}
+
+export function eliminarNotificacion(userId, idNotificacion) {
+  return request(`/notificaciones/${encodeURIComponent(idNotificacion)}`, authenticatedOptions(userId, {
+    method: 'DELETE'
+  }));
+}
+
+export function obtenerPreferenciasNotificaciones(userId) {
+  return request('/notificaciones/preferencias', authenticatedOptions(userId));
+}
+
+export function actualizarPreferenciasNotificaciones(userId, preferencias) {
+  return request('/notificaciones/preferencias', authenticatedOptions(userId, {
+    method: 'PUT',
+    body: JSON.stringify(preferencias)
+  }));
+}

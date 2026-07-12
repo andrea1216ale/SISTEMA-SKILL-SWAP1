@@ -1,4 +1,5 @@
 const ChatModel = require('../models/chatModel');
+const notificacionService = require('../services/notificacion.service');
 
 const httpError = (status, message) => Object.assign(new Error(message), { status });
 const positiveId = (value, label) => {
@@ -39,6 +40,26 @@ exports.guardarMensaje = async (req, res, next) => {
     if (mensaje.length > 5000) throw httpError(400, 'El mensaje supera los 5000 caracteres.');
     await ensureMembership(idConversacion, idEmisor);
     const guardado = await ChatModel.crearMensaje({ idConversacion, idEmisor, mensaje });
+    const participantes = await ChatModel.obtenerParticipantes(idConversacion);
+    const receptor = participantes
+      ? (Number(participantes.usuario_envia) === idEmisor ? participantes.usuario_recibe : participantes.usuario_envia)
+      : null;
+    if (receptor) {
+      notificacionService.crearNotificacion({
+        id_usuario: receptor,
+        usuario_origen: idEmisor,
+        tipo: 'CHAT',
+        evento: 'NUEVO_MENSAJE',
+        titulo: 'Nuevo mensaje',
+        mensaje: mensaje.length > 120 ? `${mensaje.slice(0, 117)}...` : mensaje,
+        prioridad: 'MEDIA',
+        ruta: 'chat.html',
+        texto_accion: 'Ver chat',
+        id_intercambio: participantes.id_intercambio,
+        id_mensaje: guardado.id_mensaje,
+        clave_agrupacion: `CHAT:${idConversacion}:${idEmisor}`
+      }).catch((error) => console.error('No se pudo crear notificacion de chat:', error.message));
+    }
     res.status(201).json({ success: true, data: guardado });
   } catch (error) { next(error); }
 };

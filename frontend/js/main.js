@@ -8,6 +8,7 @@ import { renderFeedPage } from './pages/feed.js';
 import { renderExchangesPage } from './pages/exchanges.js';
 import { renderChatPage } from './pages/chat.js';
 import { renderRatingsPage } from './pages/ratings.js';
+import { renderNotificationsPage } from './pages/notifications.js';
 import { mountSkillbot } from './components/skillbot-widget.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'ratings':
       renderRatingsPage(app);
+      break;
+    case 'notifications':
+      renderNotificationsPage(app);
       break;
     default:
       renderHomePage(app);

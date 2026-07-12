@@ -14,6 +14,7 @@ const intercambioRoutes = require('./routes/intercambio.routes');
 const calificacionRoutes = require('./routes/calificacion.routes');
 const chatRoutes = require('./routes/chatRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
+const notificacionRoutes = require('./routes/notificacion.routes');
 const configureSocket = require('./services/socket.service');
 const errorMiddleware = require('./middlewares/error.middleware');
 
@@ -40,6 +41,7 @@ app.use('/api/intercambios', intercambioRoutes);
 app.use('/api/calificaciones', calificacionRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/notificaciones', notificacionRoutes);
 app.use(errorMiddleware);
 
 const PORT = Number(process.env.PORT) || 3000;
