@@ -119,17 +119,25 @@ function renderCard(item, currentUserId, sentRequests) {
   const key = `${evaluatedUserId}:${Number(skill?.id_habilidad || 0)}`;
   const alreadySent = sentRequests.has(key);
   const canRate = !isCurrentUser && Number(item.id_intercambio_calificable) > 0;
-  const canRequest = !isCurrentUser && !canRate && (item.puede_solicitar_por_chat || item.han_chateado) && skill?.id_habilidad;
+  const alreadyRated = Number(item.ya_calificado_por_mi || 0) === 1;
+  const hasConversation = Number(item.han_chateado || 0) === 1;
+  const canRequest = !isCurrentUser && !canRate && !alreadyRated && !hasConversation && skill?.id_habilidad;
   const rateLabel = isCurrentUser
     ? 'Tu perfil'
-    : item.han_chateado
+    : alreadyRated
       ? 'Ya calificaste'
-      : 'Primero deben chatear';
+      : hasConversation
+        ? 'Sin calificacion pendiente'
+        : 'Sin conversacion';
   const disabledReason = isCurrentUser
     ? 'Es tu calificacion'
-    : !skill?.id_habilidad
+    : alreadyRated
+      ? 'Ya calificaste'
+      : hasConversation
+        ? 'Ya existe conversacion'
+      : !skill?.id_habilidad
       ? 'Sin habilidad disponible'
-      : 'Primero deben haber chateado';
+      : 'No disponible';
 
   return `<article class="rating-card">
     <div class="rating-card__identity">
@@ -192,7 +200,7 @@ function renderOwnSummary(summarySource, ownReviews) {
   </section>`;
 }
 
-function renderSection(title, eyebrow, description, items, renderer, emptyText, modifier = '') {
+function renderSection(title, eyebrow, description, items, renderer, emptyText, modifier = '', controls = '') {
   return `<section class="ratings-section ${modifier}">
     <header class="ratings-section__head">
       <div>
@@ -200,6 +208,7 @@ function renderSection(title, eyebrow, description, items, renderer, emptyText, 
         <h2>${escapeHtml(title)}</h2>
         <span>${escapeHtml(description)}</span>
       </div>
+      ${controls}
     </header>
     <div class="ratings-list">
       ${items.length ? items.map(renderer).join('') : `<div class="ratings-empty-inline">${escapeHtml(emptyText)}</div>`}
@@ -207,12 +216,26 @@ function renderSection(title, eyebrow, description, items, renderer, emptyText, 
   </section>`;
 }
 
+function renderRatingFilters(active) {
+  const options = [
+    ['all', 'Todas'],
+    ['pending', 'Por calificar'],
+    ['rated', 'Calificadas']
+  ];
+
+  return `<div class="ratings-filter" role="group" aria-label="Filtrar interacciones">
+    ${options.map(([value, label]) =>
+      `<button type="button" data-filter="${value}" class="${active === value ? 'is-active' : ''}">${label}</button>`
+    ).join('')}
+  </div>`;
+}
+
 function renderMetricStrip({ ownSummary, pendingCount, communityCount }) {
   return `<section class="ratings-metrics" aria-label="Resumen de reseñas">
     <article><span>Promedio recibido</span><strong>${Number(ownSummary?.promedio || 0).toFixed(1)}</strong></article>
     <article><span>Reseñas recibidas</span><strong>${Number(ownSummary?.total_calificaciones || 0)}</strong></article>
     <article><span>Pendientes por calificar</span><strong>${pendingCount}</strong></article>
-    <article><span>Usuarios visibles</span><strong>${communityCount}</strong></article>
+    <article><span>Interacciones listadas</span><strong>${communityCount}</strong></article>
   </section>`;
 }
 
@@ -227,6 +250,7 @@ export async function renderRatingsPage(container) {
   const sentRequests = new Set();
   let ratings = [];
   let ownReviewsData = null;
+  let ratingFilter = 'all';
 
   container.innerHTML = `<div class="dash-layout ratings-shell">
     ${renderSidebar({ nombre: displayName, correo: user.correo || '' }, 'ratings')}
@@ -254,35 +278,33 @@ export async function renderRatingsPage(container) {
 
   function renderRatings() {
     const ownUser = ratings.find((item) => Number(item.id_usuario) === Number(user.id_usuario));
-    const pending = ratings.filter((item) =>
-      Number(item.id_usuario) !== Number(user.id_usuario) && Number(item.id_intercambio_calificable) > 0
-    );
-    const community = ratings.filter((item) =>
-      Number(item.id_usuario) !== Number(user.id_usuario) && Number(item.id_intercambio_calificable || 0) === 0
-    );
+    const interactions = ratings.filter((item) => Number(item.id_usuario) !== Number(user.id_usuario));
+    const pending = interactions.filter((item) => Number(item.id_intercambio_calificable) > 0);
+    const rated = interactions.filter((item) => Number(item.ya_calificado_por_mi || 0) === 1);
+    const filteredInteractions = ratingFilter === 'pending'
+      ? pending
+      : ratingFilter === 'rated'
+        ? rated
+        : interactions;
     const ownReviews = ownReviewsData?.calificaciones || [];
     const ownSummary = ownReviewsData?.resumen || ownUser;
 
     list.innerHTML = [
-      renderMetricStrip({ ownSummary, pendingCount: pending.length, communityCount: community.length }),
+      renderMetricStrip({ ownSummary, pendingCount: pending.length, communityCount: interactions.length }),
       renderOwnSummary(ownSummary, ownReviews),
       renderSection(
-        'Pendientes por calificar',
-        'Despues de conversar',
-        'Valora intercambios donde ya hubo conversacion. Estas acciones impactan la reputacion del otro usuario.',
-        pending,
+        'Interacciones',
+        'Historial relacionado',
+        'Usuarios con quienes ya existe una solicitud, intercambio o conversacion vinculada.',
+        filteredInteractions,
         (item) => renderCard(item, user.id_usuario, sentRequests),
-        'No tienes conversaciones pendientes por calificar.',
-        'ratings-section--pending'
-      ),
-      renderSection(
-        'Comunidad',
-        'Explorar reseñas',
-        'Consulta perfiles activos y revisa si existe una accion disponible segun tu relacion con cada persona.',
-        community,
-        (item) => renderCard(item, user.id_usuario, sentRequests),
-        'No hay usuarios para mostrar por ahora.',
-        'ratings-section--community'
+        ratingFilter === 'pending'
+          ? 'No tienes usuarios pendientes por calificar.'
+          : ratingFilter === 'rated'
+            ? 'Aun no has calificado a ningun usuario.'
+            : 'Aun no hay interacciones para mostrar.',
+        'ratings-section--community',
+        renderRatingFilters(ratingFilter)
       )
     ].join('');
   }
@@ -333,6 +355,13 @@ export async function renderRatingsPage(container) {
       nombre: rating.evaluado_nombre || rating.nombre,
       habilidad: skill.nombre
     });
+  });
+
+  list.addEventListener('click', (event) => {
+    const filterButton = event.target.closest('[data-filter]');
+    if (!filterButton) return;
+    ratingFilter = filterButton.dataset.filter;
+    renderRatings();
   });
 
   modal.addEventListener('click', (event) => {

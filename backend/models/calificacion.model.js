@@ -168,8 +168,19 @@ const Calificacion = {
     const levelColumn = userColumns.has('nivel') ? 'u.nivel' : 'NULL';
     const chatExists = chatExistsExpression(messageColumns);
     const params = chatExists === 'FALSE'
-      ? [idUsuarioActual, idUsuarioActual, idUsuarioActual, idUsuarioActual]
-      : [idUsuarioActual, idUsuarioActual, idUsuarioActual, idUsuarioActual, idUsuarioActual, idUsuarioActual];
+      ? [
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual
+        ]
+      : [
+          idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual, idUsuarioActual, idUsuarioActual,
+          idUsuarioActual
+        ];
 
     const [rows] = await connection.query(
       `SELECT
@@ -181,6 +192,17 @@ const Calificacion = {
          COUNT(c.id_calificacion) AS total_calificaciones,
          ${chatExists} AS han_chateado,
          (${calificableExchangeSql}) AS id_intercambio_calificable,
+         EXISTS (
+           SELECT 1
+           FROM calificaciones cal_done
+           INNER JOIN intercambios inter_done ON inter_done.id_intercambio = cal_done.id_intercambio
+           WHERE cal_done.usuario_calificador = ?
+             AND cal_done.usuario_evaluado = u.id_usuario
+             AND (
+               (inter_done.usuario_envia = ? AND inter_done.usuario_recibe = u.id_usuario)
+               OR (inter_done.usuario_recibe = ? AND inter_done.usuario_envia = u.id_usuario)
+             )
+         ) AS ya_calificado_por_mi,
          (
            SELECT h.id_habilidad
            FROM usuario_habilidad uh
@@ -200,6 +222,15 @@ const Calificacion = {
        FROM usuarios u
        LEFT JOIN calificaciones c ON c.usuario_evaluado = u.id_usuario
        WHERE u.estado = 'ACTIVO'
+         AND (
+           u.id_usuario = ?
+           OR EXISTS (
+             SELECT 1
+             FROM intercambios rel
+             WHERE (rel.usuario_envia = ? AND rel.usuario_recibe = u.id_usuario)
+                OR (rel.usuario_recibe = ? AND rel.usuario_envia = u.id_usuario)
+           )
+         )
        GROUP BY u.id_usuario, nombre, descripcion, nivel
        ORDER BY
          CASE WHEN u.id_usuario = ? THEN 0 ELSE 1 END,
