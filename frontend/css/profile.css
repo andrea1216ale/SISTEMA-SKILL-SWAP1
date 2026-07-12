@@ -26,6 +26,20 @@ body[data-page="profile"] { --p-ink:#102a2e; --p-soft:#667779; --p-line:#e2e9e5;
 .profile-skills li strong { font-size:15px; }
 .profile-skills li span { color:var(--p-soft); font-size:12px; }
 .profile-skills li.profile-skill-empty { display:block; background:#f4f6f3; }
+.profile-reviews { margin-top:24px; }
+.profile-reviews header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:20px; }
+.profile-reviews-summary { min-width:100px; text-align:right; }
+.profile-reviews-summary strong { display:block; color:#8d6519; font:800 32px/1 "Manrope",sans-serif; }
+.profile-reviews-summary span { color:var(--p-soft); font-size:12px; }
+.profile-reviews-list { display:grid; gap:12px; }
+.profile-review { padding:18px; border:1px solid var(--p-line); border-radius:16px; background:#f8faf7; }
+.profile-review header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.profile-review header strong { font:800 14px "Manrope",sans-serif; }
+.profile-review header span { color:var(--p-soft); font-size:12px; }
+.profile-review__score { display:flex; align-items:center; gap:10px; margin-bottom:10px; color:#8d6519; }
+.profile-review__score b { font-size:18px; }
+.profile-review p { color:#344f52; font-size:14px; line-height:1.6; }
+.profile-reviews-empty { padding:18px; border-radius:14px; color:var(--p-soft); background:#f4f6f3; font-style:italic; }
 .profile-editor header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:28px; }
 .profile-description-field { display:block; font-weight:700; }
 .profile-description-field textarea { width:100%; resize:vertical; margin-top:9px; padding:16px; border:1px solid #cad7d2; border-radius:13px; color:var(--p-ink); background:#fbfcf9; font:16px/1.6 inherit; outline:none; }

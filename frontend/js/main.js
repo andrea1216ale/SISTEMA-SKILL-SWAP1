@@ -7,6 +7,7 @@ import { renderSearchPage } from './pages/search.js';
 import { renderFeedPage } from './pages/feed.js';
 import { renderExchangesPage } from './pages/exchanges.js';
 import { renderChatPage } from './pages/chat.js';
+import { renderRatingsPage } from './pages/ratings.js';
 import { mountSkillbot } from './components/skillbot-widget.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case 'chat':
       renderChatPage(app);
+      break;
+    case 'ratings':
+      renderRatingsPage(app);
       break;
     default:
       renderHomePage(app);

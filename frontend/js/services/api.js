@@ -136,6 +136,21 @@ export function getSavedPosts(userId) {
   return request(`/usuarios/${userId}/publicaciones-guardadas`, authenticatedOptions(userId));
 }
 
+export function obtenerCalificaciones(userId) {
+  return request('/calificaciones', authenticatedOptions(userId));
+}
+
+export function obtenerCalificacionesUsuario(userId, targetUserId) {
+  return request(`/calificaciones/usuario/${encodeURIComponent(targetUserId)}`, authenticatedOptions(userId));
+}
+
+export function crearCalificacion(userId, data) {
+  return request('/calificaciones', authenticatedOptions(userId, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }));
+}
+
 export function obtenerSolicitudes(userId) {
   return request('/intercambios/solicitudes', authenticatedOptions(userId));
 }
