@@ -171,15 +171,13 @@ const Calificacion = {
       ? [
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual
+          idUsuarioActual, idUsuarioActual, idUsuarioActual
         ]
       : [
           idUsuarioActual, idUsuarioActual,
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
           idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual
+          idUsuarioActual, idUsuarioActual, idUsuarioActual
         ];
 
     const [rows] = await connection.query(
@@ -227,8 +225,8 @@ const Calificacion = {
            OR EXISTS (
              SELECT 1
              FROM intercambios rel
-             WHERE (rel.usuario_envia = ? AND rel.usuario_recibe = u.id_usuario)
-                OR (rel.usuario_recibe = ? AND rel.usuario_envia = u.id_usuario)
+             WHERE rel.usuario_envia = ?
+               AND rel.usuario_recibe = u.id_usuario
            )
          )
        GROUP BY u.id_usuario, nombre, descripcion, nivel
