@@ -235,7 +235,7 @@ function renderMetricStrip({ ownSummary, pendingCount, communityCount }) {
     <article><span>Promedio recibido</span><strong>${Number(ownSummary?.promedio || 0).toFixed(1)}</strong></article>
     <article><span>Reseñas recibidas</span><strong>${Number(ownSummary?.total_calificaciones || 0)}</strong></article>
     <article><span>Pendientes por calificar</span><strong>${pendingCount}</strong></article>
-    <article><span>Interacciones listadas</span><strong>${communityCount}</strong></article>
+    <article><span>Solicitudes listadas</span><strong>${communityCount}</strong></article>
   </section>`;
 }
 
@@ -293,16 +293,16 @@ export async function renderRatingsPage(container) {
       renderMetricStrip({ ownSummary, pendingCount: pending.length, communityCount: interactions.length }),
       renderOwnSummary(ownSummary, ownReviews),
       renderSection(
-        'Interacciones',
-        'Historial relacionado',
-        'Usuarios con quienes ya existe una solicitud, intercambio o conversacion vinculada.',
+        'Solicitudes enviadas',
+        'Historial solicitado',
+        'Usuarios a quienes les enviaste una solicitud de intercambio.',
         filteredInteractions,
         (item) => renderCard(item, user.id_usuario, sentRequests),
         ratingFilter === 'pending'
           ? 'No tienes usuarios pendientes por calificar.'
           : ratingFilter === 'rated'
             ? 'Aun no has calificado a ningun usuario.'
-            : 'Aun no hay interacciones para mostrar.',
+            : 'Aun no has solicitado intercambios para mostrar.',
         'ratings-section--community',
         renderRatingFilters(ratingFilter)
       )
