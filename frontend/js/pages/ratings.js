@@ -119,17 +119,17 @@ function renderCard(item, currentUserId, sentRequests) {
   const key = `${evaluatedUserId}:${Number(skill?.id_habilidad || 0)}`;
   const alreadySent = sentRequests.has(key);
   const canRate = !isCurrentUser && Number(item.id_intercambio_calificable) > 0;
-  const canRequest = !isCurrentUser && !canRate && (item.puede_solicitar_por_chat || item.han_chateado) && skill?.id_habilidad;
+  const canRequest = !isCurrentUser && !canRate && skill?.id_habilidad;
   const rateLabel = isCurrentUser
     ? 'Tu perfil'
     : item.han_chateado
       ? 'Ya calificaste'
-      : 'Primero deben chatear';
+      : 'Sin conversacion';
   const disabledReason = isCurrentUser
     ? 'Es tu calificacion'
     : !skill?.id_habilidad
       ? 'Sin habilidad disponible'
-      : 'Primero deben haber chateado';
+      : 'No disponible';
 
   return `<article class="rating-card">
     <div class="rating-card__identity">
@@ -212,7 +212,7 @@ function renderMetricStrip({ ownSummary, pendingCount, communityCount }) {
     <article><span>Promedio recibido</span><strong>${Number(ownSummary?.promedio || 0).toFixed(1)}</strong></article>
     <article><span>Reseñas recibidas</span><strong>${Number(ownSummary?.total_calificaciones || 0)}</strong></article>
     <article><span>Pendientes por calificar</span><strong>${pendingCount}</strong></article>
-    <article><span>Usuarios visibles</span><strong>${communityCount}</strong></article>
+    <article><span>Interacciones listadas</span><strong>${communityCount}</strong></article>
   </section>`;
 }
 
@@ -276,12 +276,12 @@ export async function renderRatingsPage(container) {
         'ratings-section--pending'
       ),
       renderSection(
-        'Comunidad',
-        'Explorar reseñas',
-        'Consulta perfiles activos y revisa si existe una accion disponible segun tu relacion con cada persona.',
+        'Interacciones',
+        'Historial relacionado',
+        'Usuarios con quienes ya existe una solicitud, intercambio o conversacion vinculada.',
         community,
         (item) => renderCard(item, user.id_usuario, sentRequests),
-        'No hay usuarios para mostrar por ahora.',
+        'Aun no hay interacciones para mostrar.',
         'ratings-section--community'
       )
     ].join('');

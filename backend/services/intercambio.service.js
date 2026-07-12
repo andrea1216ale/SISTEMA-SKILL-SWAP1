@@ -35,17 +35,15 @@ exports.verificarSolicitud = async (usuarioEnvia, idUsuarioRecibe) => {
     throw createError(404, 'El usuario destino no existe o no esta activo.');
   }
 
-  const hanChateado = await Intercambio.haChateadoConUsuario(usuarioEnvia, idDestino);
   const solicitudPendiente = Boolean(await Intercambio.obtenerSolicitudPendiente(usuarioEnvia, idDestino));
-  const puedeSolicitar = hanChateado && !solicitudPendiente;
+  const puedeSolicitar = !solicitudPendiente;
 
   let motivo = null;
-  if (!hanChateado) motivo = 'Debes conversar con este usuario antes de solicitar un intercambio.';
-  else if (solicitudPendiente) motivo = 'Ya existe una solicitud de intercambio pendiente entre ambos usuarios.';
+  if (solicitudPendiente) motivo = 'Ya existe una solicitud de intercambio pendiente entre ambos usuarios.';
 
   return {
     puede_solicitar: puedeSolicitar,
-    han_chateado: hanChateado,
+    han_chateado: await Intercambio.haChateadoConUsuario(usuarioEnvia, idDestino),
     solicitud_pendiente: solicitudPendiente,
     ...(motivo ? { motivo } : {})
   };
@@ -76,11 +74,6 @@ exports.solicitarIntercambio = async (usuarioEnvia, payload) => {
   const habilidadExiste = await Intercambio.habilidadExiste(idHabilidad);
   if (!habilidadExiste) {
     throw createError(404, 'La habilidad seleccionada no existe.');
-  }
-
-  const haChateado = await Intercambio.haChateadoConUsuario(usuarioEnvia, idUsuarioRecibe);
-  if (!haChateado) {
-    throw createError(403, 'Solo puedes solicitar un intercambio con usuarios con los que hayas conversado previamente.');
   }
 
   const duplicada = await Intercambio.existeSolicitudPendiente(usuarioEnvia, idUsuarioRecibe, idHabilidad);
