@@ -140,6 +140,7 @@ body[data-page="exchanges"] {
   background: var(--d-paper);
   box-shadow: 0 8px 24px rgba(16, 42, 46, .045);
   transition: border-color .2s, box-shadow .2s, transform .2s;
+  cursor: pointer;
 }
 
 .exchange-card:hover {

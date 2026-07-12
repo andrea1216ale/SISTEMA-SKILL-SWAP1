@@ -139,7 +139,7 @@ function renderCard(item, currentUserId, sentRequests) {
       ? 'Sin habilidad disponible'
       : 'No disponible';
 
-  return `<article class="rating-card">
+  return `<article class="rating-card" data-user-id="${evaluatedUserId}">
     <div class="rating-card__identity">
       <span class="rating-avatar">${initial(evaluatedName)}</span>
       <div class="rating-card__name">
@@ -329,33 +329,37 @@ export async function renderRatingsPage(container) {
   }
 
   list.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-action="request-swap"]');
-    const rateButton = event.target.closest('[data-action="rate-user"]');
+    const interactive = event.target.closest('button, a[href]');
+    if (interactive) {
+      if (interactive.matches('[data-action="rate-user"]') && !interactive.disabled) {
+        const rating = ratings.find((item) =>
+          Number(item.usuario_evaluado || item.id_usuario) === Number(interactive.dataset.userId)
+        );
+        if (rating?.id_intercambio_calificable) openRatingModal(container, rating);
+        return;
+      }
 
-    if (rateButton && !rateButton.disabled) {
-      const rating = ratings.find((item) =>
-        Number(item.usuario_evaluado || item.id_usuario) === Number(rateButton.dataset.userId)
-      );
-      if (rating?.id_intercambio_calificable) openRatingModal(container, rating);
+      if (interactive.matches('[data-action="request-swap"]') && !interactive.disabled) {
+        const rating = ratings.find((item) =>
+          Number(item.usuario_evaluado || item.id_usuario) === Number(interactive.dataset.userId)
+          && Number(primarySkill(item)?.id_habilidad) === Number(interactive.dataset.skillId)
+        );
+        const skill = primarySkill(rating || {});
+        if (!rating || !skill) return;
+        openSolicitarIntercambioModal(container, {
+          id_usuario: rating.usuario_evaluado || rating.id_usuario,
+          id_habilidad: skill.id_habilidad,
+          nombre: rating.evaluado_nombre || rating.nombre,
+          habilidad: skill.nombre
+        });
+      }
       return;
     }
 
-    if (!button || button.disabled) return;
-
-    const rating = ratings.find((item) =>
-      Number(item.usuario_evaluado || item.id_usuario) === Number(button.dataset.userId)
-      && Number(primarySkill(item)?.id_habilidad) === Number(button.dataset.skillId)
-    );
-
-    const skill = primarySkill(rating || {});
-    if (!rating || !skill) return;
-
-    openSolicitarIntercambioModal(container, {
-      id_usuario: rating.usuario_evaluado || rating.id_usuario,
-      id_habilidad: skill.id_habilidad,
-      nombre: rating.evaluado_nombre || rating.nombre,
-      habilidad: skill.nombre
-    });
+    const article = event.target.closest('[data-user-id]');
+    if (article) {
+      window.location.href = `profile.html?userId=${article.dataset.userId}`;
+    }
   });
 
   list.addEventListener('click', (event) => {

@@ -29,7 +29,7 @@ function resultRow(person, user, solicitudesEnviadas) {
     ? `<button class="search-request-btn" type="button" data-action="request-swap" data-user-id="${Number(person.id_usuario)}" data-skill-id="${Number(person.id_habilidad)}" ${solicitudEnviada ? 'disabled' : ''}>${solicitudEnviada ? 'Solicitud enviada' : 'Solicitar intercambio'}</button>`
     : '';
 
-  return `<article class="search-result">
+  return `<article class="search-result" data-user-id="${Number(person.id_usuario)}">
     <div class="search-result__person">
       <span class="search-result__avatar">${initial(person.nombre)}</span>
       <div>
@@ -174,15 +174,22 @@ export async function renderSearchPage(container) {
   });
 
   results.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-action="request-swap"]');
-    if (!button || button.disabled) return;
+    const interactive = event.target.closest('button, a[href]');
+    if (interactive) {
+      if (interactive.matches('[data-action="request-swap"]') && !interactive.disabled) {
+        const person = currentResults.find((item) =>
+          Number(item.id_usuario) === Number(interactive.dataset.userId)
+          && Number(item.id_habilidad) === Number(interactive.dataset.skillId)
+        );
+        if (person) openSolicitarIntercambioModal(container, person);
+      }
+      return;
+    }
 
-    const person = currentResults.find((item) =>
-      Number(item.id_usuario) === Number(button.dataset.userId)
-      && Number(item.id_habilidad) === Number(button.dataset.skillId)
-    );
-
-    if (person) openSolicitarIntercambioModal(container, person);
+    const article = event.target.closest('[data-user-id]');
+    if (article) {
+      window.location.href = `profile.html?userId=${article.dataset.userId}`;
+    }
   });
 
   modal.addEventListener('click', (event) => {

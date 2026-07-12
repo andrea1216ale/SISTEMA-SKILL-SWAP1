@@ -104,7 +104,7 @@ function renderCard(solicitud) {
     : '';
 
   return `
-    <article class="exchange-card" data-id="${solicitud.id_intercambio}">
+    <article class="exchange-card" data-id="${solicitud.id_intercambio}" data-user-id="${Number(solicitud.usuario_envia)}">
       <div class="exchange-header">
         <div class="exchange-user">
           <span class="exchange-avatar">${initial(nombre)}</span>
@@ -249,59 +249,65 @@ export async function renderExchangesPage(container) {
   await cargarSolicitudes();
 
   listContainer.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-action]');
-    if (!button) return;
+    const interactive = event.target.closest('button, a[href]');
+    if (interactive) {
+      const id = interactive.dataset.id;
+      const action = interactive.dataset.action;
+      interactive.disabled = true;
 
-    const id = button.dataset.id;
-    const action = button.dataset.action;
-    button.disabled = true;
+      if (action === 'accept') {
+        const response = await aceptarSolicitud(user.id_usuario, id);
+        interactive.disabled = false;
 
-    if (action === 'accept') {
-      const response = await aceptarSolicitud(user.id_usuario, id);
-      button.disabled = false;
+        if (!response.success) {
+          showFeedback(container, response.message || response.error, 'error');
+          return;
+        }
 
-      if (!response.success) {
-        showFeedback(container, response.message || response.error, 'error');
-        return;
+        updateSolicitud(solicitudes, response.data);
+        renderSolicitudes();
+        showFeedback(container, response.message);
       }
 
-      updateSolicitud(solicitudes, response.data);
-      renderSolicitudes();
-      showFeedback(container, response.message);
+      if (action === 'reject') {
+        if (!confirm('Deseas rechazar esta solicitud?')) {
+          interactive.disabled = false;
+          return;
+        }
+
+        const response = await rechazarSolicitud(user.id_usuario, id);
+        interactive.disabled = false;
+
+        if (!response.success) {
+          showFeedback(container, response.message || response.error, 'error');
+          return;
+        }
+
+        updateSolicitud(solicitudes, response.data);
+        renderSolicitudes();
+        showFeedback(container, response.message);
+      }
+
+      if (action === 'calendar') {
+        interactive.disabled = false;
+        abrirCalendario(id);
+      }
+
+      if (action === 'chat') {
+        const response = await obtenerOCrearConversacion(user.id_usuario, id);
+        if (!response.success || !response.data?.id_conversacion) {
+          interactive.disabled = false;
+          showFeedback(container, response.message || response.error || 'No se pudo abrir el chat.', 'error');
+          return;
+        }
+        location.href = `chat.html?idConversacion=${response.data.id_conversacion}`;
+      }
+      return;
     }
 
-    if (action === 'reject') {
-      if (!confirm('Deseas rechazar esta solicitud?')) {
-        button.disabled = false;
-        return;
-      }
-
-      const response = await rechazarSolicitud(user.id_usuario, id);
-      button.disabled = false;
-
-      if (!response.success) {
-        showFeedback(container, response.message || response.error, 'error');
-        return;
-      }
-
-      updateSolicitud(solicitudes, response.data);
-      renderSolicitudes();
-      showFeedback(container, response.message);
-    }
-
-    if (action === 'calendar') {
-      button.disabled = false;
-      abrirCalendario(id);
-    }
-
-    if (action === 'chat') {
-      const response = await obtenerOCrearConversacion(user.id_usuario, id);
-      if (!response.success || !response.data?.id_conversacion) {
-        button.disabled = false;
-        showFeedback(container, response.message || response.error || 'No se pudo abrir el chat.', 'error');
-        return;
-      }
-      location.href = `chat.html?idConversacion=${response.data.id_conversacion}`;
+    const article = event.target.closest('[data-user-id]');
+    if (article) {
+      window.location.href = `profile.html?userId=${article.dataset.userId}`;
     }
   });
 

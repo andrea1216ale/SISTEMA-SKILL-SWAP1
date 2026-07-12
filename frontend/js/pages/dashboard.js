@@ -53,7 +53,7 @@ function renderContent(data) {
   const skills = data.popularSkills.map((skill) => `
     <li><span class="dash-list-avatar">${initial(skill.nombre)}</span><div><strong>${escapeHtml(skill.nombre)}</strong><small>${escapeHtml(skill.categoria || 'Sin categoría')}</small></div><p><b>${Number(skill.usuarios).toLocaleString('es-PE')}</b><small>usuarios</small></p></li>`).join('');
   const users = data.recommendedUsers.map((user) => `
-    <li><span class="dash-list-avatar">${initial(user.nombre)}</span><div><strong>${escapeHtml(user.nombre)}</strong><small>${escapeHtml(user.habilidades)}</small></div><p class="dash-rating"><b>${Number(user.rating).toFixed(1)} ★</b><small>${Number(user.intercambios)} intercambios</small></p></li>`).join('');
+    <li data-user-id="${Number(user.id_usuario)}"><span class="dash-list-avatar">${initial(user.nombre)}</span><div><strong>${escapeHtml(user.nombre)}</strong><small>${escapeHtml(user.habilidades)}</small></div><p class="dash-rating"><b>${Number(user.rating).toFixed(1)} ★</b><small>${Number(user.intercambios)} intercambios</small></p></li>`).join('');
 
   return `
     <div class="dash-layout">
@@ -93,5 +93,15 @@ export async function renderDashboardPage(container) {
   container.querySelector('#logoutButton').addEventListener('click', () => {
     clearCurrentUser();
     window.location.href = 'login.html';
+  });
+
+  container.querySelector('.dash-panels')?.addEventListener('click', (event) => {
+    const interactive = event.target.closest('button, a[href]');
+    if (interactive) return;
+
+    const li = event.target.closest('[data-user-id]');
+    if (li) {
+      window.location.href = `profile.html?userId=${li.dataset.userId}`;
+    }
   });
 }

@@ -298,6 +298,11 @@ body[data-page="dashboard"] {
   padding: 14px 16px;
   border-radius: 16px;
   background: #f5f7f2;
+  cursor: pointer;
+  transition: background .2s;
+}
+.dash-panel li:hover {
+  background: #e8ede6;
 }
 
 .dash-list-avatar {

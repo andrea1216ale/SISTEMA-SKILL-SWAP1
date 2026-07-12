@@ -14,9 +14,9 @@ body[data-page="search"] { --s-ink:#102a2e; --s-soft:#667779; --s-line:#e2e9e5; 
 .search-summary { min-height:57px; display:flex; align-items:center; justify-content:space-between; gap:20px; color:var(--s-soft); font-size:13px; }
 .search-summary button { border:0; color:var(--s-teal); background:transparent; font-weight:700; cursor:pointer; }
 .search-results { overflow:hidden; border:1px solid var(--s-line); border-radius:20px; background:var(--s-paper); box-shadow:0 8px 24px rgba(16,42,46,.04); }
-.search-result { min-height:142px; display:grid; grid-template-columns:minmax(190px,1.05fr) minmax(170px,.8fr) minmax(200px,1.25fr) minmax(176px,auto); align-items:center; gap:26px; padding:24px 28px; border-bottom:1px solid var(--s-line); transition:.2s; }
+.search-result { min-height:142px; display:grid; grid-template-columns:minmax(190px,1.05fr) minmax(170px,.8fr) minmax(200px,1.25fr) minmax(176px,auto); align-items:center; gap:26px; padding:24px 28px; border-bottom:1px solid var(--s-line); transition:.2s; cursor:pointer; }
 .search-result:last-child { border-bottom:0; }
-.search-result:hover { background:#f8faf6; }
+.search-result:hover { background:#eef3ed; }
 .search-result__person { min-width:0; display:flex; align-items:center; gap:14px; }
 .search-result__avatar { flex:0 0 auto; width:54px; height:54px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(145deg,#116b68,#45a99e); font:800 20px "Manrope",sans-serif; }
 .search-result h2 { overflow:hidden; margin-bottom:6px; font:800 16px "Manrope",sans-serif; text-overflow:ellipsis; white-space:nowrap; }
