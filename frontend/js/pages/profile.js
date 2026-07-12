@@ -1,5 +1,5 @@
 import { getCurrentUser, clearCurrentUser } from '../common/auth.js';
-import { getProfile, updateProfile } from '../services/api.js';
+import { getProfile, obtenerCalificacionesUsuario, updateProfile } from '../services/api.js';
 import { renderSidebar } from './dashboard.js';
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -20,8 +20,30 @@ function skillOptions(skills, selected, type) {
     </label>`).join('');
 }
 
-function renderContent(profile, sidebarUser, isOwnProfile) {
+function formatDate(value) {
+  if (!value) return 'Sin fecha';
+  return new Date(value).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function stars(score) {
+  const value = Math.max(0, Math.min(5, Math.round(Number(score || 0))));
+  return Array.from({ length: 5 }, (_, index) => index < value ? '*' : '-').join('');
+}
+
+function reviewItems(reviews) {
+  return reviews.length
+    ? reviews.map((review) => `<article class="profile-review">
+        <header><strong>${escapeHtml(review.usuario_calificador?.nombre || 'Usuario')}</strong><span>${formatDate(review.fecha)}</span></header>
+        <div class="profile-review__score"><b>${Number(review.puntuacion || 0).toFixed(1)}</b><span>${stars(review.puntuacion)}</span></div>
+        <p>${escapeHtml(review.comentario || 'Sin comentario escrito.')}</p>
+      </article>`).join('')
+    : '<div class="profile-reviews-empty">Todavia no hay reseñas para este perfil.</div>';
+}
+
+function renderContent(profile, sidebarUser, isOwnProfile, reviewsData = null) {
   const name = fullName(profile);
+  const reviews = reviewsData?.calificaciones || [];
+  const summary = reviewsData?.resumen || { promedio: profile.puntuacion || 0, total_calificaciones: 0 };
   return `
     <div class="dash-layout profile-shell">
       ${renderSidebar(sidebarUser, isOwnProfile ? 'profile' : '')}
@@ -43,6 +65,13 @@ function renderContent(profile, sidebarUser, isOwnProfile) {
             <article class="profile-card profile-skills profile-skills--offer"><p>LO QUE COMPARTO</p><h2>Habilidades que ofrezco</h2><ul>${skillItems(profile.habilidadesOfrece, 'Aún no has seleccionado habilidades para ofrecer.')}</ul></article>
             <article class="profile-card profile-skills profile-skills--want"><p>MIS PRÓXIMOS RETOS</p><h2>Quiero aprender</h2><ul>${skillItems(profile.habilidadesBusca, 'Aún no has seleccionado qué quieres aprender.')}</ul></article>
           </div>
+          <article class="profile-card profile-reviews">
+            <header>
+              <div><p>RESEÑAS RECIBIDAS</p><h2>${isOwnProfile ? 'Lo que otros dicen de ti' : 'Opiniones de la comunidad'}</h2></div>
+              <div class="profile-reviews-summary"><strong>${Number(summary.promedio || 0).toFixed(1)}</strong><span>${Number(summary.total_calificaciones || 0)} reseñas</span></div>
+            </header>
+            <div class="profile-reviews-list">${reviewItems(reviews)}</div>
+          </article>
         </section>
 
         ${isOwnProfile ? `<form id="profileForm" class="profile-card profile-editor" hidden>
@@ -82,8 +111,10 @@ export async function renderProfilePage(container) {
     return;
   }
 
+  const reviewsResponse = await obtenerCalificacionesUsuario(currentUser.id_usuario, profileUserId);
+  const reviewsData = reviewsResponse.success ? reviewsResponse.data : null;
   const sidebarName = currentUser.nombre || [currentUser.nombres, currentUser.apellido_paterno].filter(Boolean).join(' ') || 'Usuario';
-  container.innerHTML = renderContent(profile, { nombre: sidebarName, correo: currentUser.correo || '' }, isOwnProfile);
+  container.innerHTML = renderContent(profile, { nombre: sidebarName, correo: currentUser.correo || '' }, isOwnProfile, reviewsData);
   container.querySelector('#logoutButton').addEventListener('click', () => {
     clearCurrentUser();
     window.location.href = 'login.html';

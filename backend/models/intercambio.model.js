@@ -1,5 +1,7 @@
 const db = require('../database');
 
+const nombreUsuarioSql = (alias) => `CONCAT_WS(' ', ${alias}.nombres, ${alias}.apellido_paterno, ${alias}.apellido_materno)`;
+
 const solicitudSelect = `
   SELECT
     i.id_intercambio,
@@ -12,7 +14,7 @@ const solicitudSelect = `
     i.fecha_respuesta,
     u.nombres AS nombre,
     CONCAT_WS(' ', u.apellido_paterno, u.apellido_materno) AS apellido,
-    CONCAT_WS(' ', u.nombres, u.apellido_paterno, u.apellido_materno) AS usuario_nombre,
+    ${nombreUsuarioSql('u')} AS usuario_nombre,
     h.nombre AS nombre_habilidad,
     (
       SELECT ROUND(COALESCE(AVG(c.puntuacion), 0), 1)
@@ -47,26 +49,132 @@ const Intercambio = {
     const [rows] = await db.promise().query(
       `SELECT id_intercambio
        FROM intercambios
-       WHERE usuario_envia = ?
-         AND usuario_recibe = ?
-         AND id_habilidad = ?
-         AND UPPER(estado) = 'PENDIENTE'
+       WHERE UPPER(estado) = 'PENDIENTE'
+         AND (
+           (usuario_envia = ? AND usuario_recibe = ?)
+           OR (usuario_envia = ? AND usuario_recibe = ?)
+         )
        LIMIT 1`,
-      [usuarioEnvia, usuarioRecibe, idHabilidad]
+      [usuarioEnvia, usuarioRecibe, usuarioRecibe, usuarioEnvia]
     );
 
     return Boolean(rows[0]);
   },
 
+  haChateadoConUsuario: async (usuarioEnvia, usuarioRecibe) => {
+    const [rows] = await db.promise().query(
+      `SELECT m.id_mensaje
+       FROM mensajes m
+       INNER JOIN conversaciones c ON c.id_conversacion = m.id_conversacion
+       INNER JOIN intercambios i ON i.id_intercambio = c.id_intercambio
+       WHERE (
+         (i.usuario_envia = ? AND i.usuario_recibe = ?)
+         OR (i.usuario_envia = ? AND i.usuario_recibe = ?)
+       )
+       LIMIT 1`,
+      [usuarioEnvia, usuarioRecibe, usuarioRecibe, usuarioEnvia]
+    );
+
+    return Boolean(rows[0]);
+  },
+
+  obtenerContactosDisponibles: async (idUsuario) => {
+    const [rows] = await db.promise().query(
+      `SELECT DISTINCT
+         u.id_usuario,
+         ${nombreUsuarioSql('u')} AS nombre,
+         u.descripcion,
+         u.nivel
+       FROM mensajes m
+       INNER JOIN conversaciones c ON c.id_conversacion = m.id_conversacion
+       INNER JOIN intercambios i ON i.id_intercambio = c.id_intercambio
+       INNER JOIN usuarios u ON u.id_usuario = CASE
+         WHEN i.usuario_envia = ? THEN i.usuario_recibe
+         ELSE i.usuario_envia
+       END
+       WHERE (i.usuario_envia = ? OR i.usuario_recibe = ?)
+         AND u.id_usuario <> ?
+         AND u.estado = 'ACTIVO'
+       ORDER BY nombre`,
+      [idUsuario, idUsuario, idUsuario, idUsuario]
+    );
+
+    return rows;
+  },
+
+  obtenerSolicitudPendiente: async (usuarioEnvia, usuarioRecibe) => {
+    const [rows] = await db.promise().query(
+      `SELECT id_intercambio
+       FROM intercambios
+       WHERE UPPER(estado) = 'PENDIENTE'
+         AND (
+           (usuario_envia = ? AND usuario_recibe = ?)
+           OR (usuario_envia = ? AND usuario_recibe = ?)
+         )
+       LIMIT 1`,
+      [usuarioEnvia, usuarioRecibe, usuarioRecibe, usuarioEnvia]
+    );
+
+    return rows[0] || null;
+  },
+
   crearSolicitud: async ({ usuarioEnvia, usuarioRecibe, idHabilidad, mensaje }) => {
     const [result] = await db.promise().query(
       `INSERT INTO intercambios
-        (usuario_envia, usuario_recibe, id_habilidad, mensaje_solicitud, estado, fecha)
-       VALUES (?, ?, ?, ?, 'PENDIENTE', NOW())`,
+        (usuario_envia, usuario_recibe, id_habilidad, mensaje_solicitud)
+       VALUES (?, ?, ?, ?)`,
       [usuarioEnvia, usuarioRecibe, idHabilidad, mensaje || null]
     );
 
-    return Intercambio.obtenerDetalle(result.insertId, usuarioEnvia);
+    return { id_intercambio: result.insertId, estado: 'PENDIENTE' };
+  },
+
+  listarRecibidos: async (idUsuario) => {
+    const [rows] = await db.promise().query(
+      `SELECT
+         i.id_intercambio,
+         i.mensaje_solicitud,
+         UPPER(i.estado) AS estado,
+         i.fecha,
+         i.fecha_respuesta,
+         u.id_usuario AS id_usuario_envia,
+         ${nombreUsuarioSql('u')} AS nombre_usuario_envia,
+         h.id_habilidad,
+         h.nombre AS nombre_habilidad,
+         h.categoria
+       FROM intercambios i
+       INNER JOIN usuarios u ON u.id_usuario = i.usuario_envia
+       INNER JOIN habilidades h ON h.id_habilidad = i.id_habilidad
+       WHERE i.usuario_recibe = ?
+       ORDER BY i.fecha DESC`,
+      [idUsuario]
+    );
+
+    return rows;
+  },
+
+  listarEnviados: async (idUsuario) => {
+    const [rows] = await db.promise().query(
+      `SELECT
+         i.id_intercambio,
+         i.mensaje_solicitud,
+         UPPER(i.estado) AS estado,
+         i.fecha,
+         i.fecha_respuesta,
+         u.id_usuario AS id_usuario_recibe,
+         ${nombreUsuarioSql('u')} AS nombre_usuario_recibe,
+         h.id_habilidad,
+         h.nombre AS nombre_habilidad,
+         h.categoria
+       FROM intercambios i
+       INNER JOIN usuarios u ON u.id_usuario = i.usuario_recibe
+       INNER JOIN habilidades h ON h.id_habilidad = i.id_habilidad
+       WHERE i.usuario_envia = ?
+       ORDER BY i.fecha DESC`,
+      [idUsuario]
+    );
+
+    return rows;
   },
 
   obtenerSolicitudes: async (usuarioRecibe) => {
@@ -113,6 +221,19 @@ const Intercambio = {
          AND usuario_recibe = ?
          AND UPPER(estado) = 'PENDIENTE'`,
       [estado, idIntercambio, usuarioRecibe]
+    );
+
+    return result.affectedRows > 0;
+  },
+
+  finalizar: async (idIntercambio, idUsuario) => {
+    const [result] = await db.promise().query(
+      `UPDATE intercambios
+       SET estado = 'FINALIZADA'
+       WHERE id_intercambio = ?
+         AND UPPER(estado) = 'ACEPTADA'
+         AND (usuario_envia = ? OR usuario_recibe = ?)`,
+      [idIntercambio, idUsuario, idUsuario]
     );
 
     return result.affectedRows > 0;

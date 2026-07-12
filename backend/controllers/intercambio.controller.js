@@ -31,6 +31,27 @@ exports.obtenerSolicitudes = async (req, res, next) => {
   }
 };
 
+exports.obtenerContactosDisponibles = async (req, res, next) => {
+  try {
+    const contactos = await service.obtenerContactosDisponibles(req.user.id_usuario);
+    res.json({ success: true, data: contactos });
+  } catch (error) {
+    handleKnownError(error, res, next);
+  }
+};
+
+exports.verificarSolicitud = async (req, res, next) => {
+  const id = idFrom(req.params.idUsuario);
+  if (!id) return invalidId(res);
+
+  try {
+    const data = await service.verificarSolicitud(req.user.id_usuario, id);
+    res.json({ success: true, data });
+  } catch (error) {
+    handleKnownError(error, res, next);
+  }
+};
+
 exports.solicitarIntercambio = async (req, res, next) => {
   try {
     const resultado = await service.solicitarIntercambio(req.user.id_usuario, req.body || {});
@@ -104,12 +125,42 @@ exports.obtenerSesion = async (req, res, next) => {
   }
 };
 
+exports.listarRecibidos = async (req, res, next) => {
+  try {
+    const data = await service.listarRecibidos(req.user.id_usuario);
+    res.json({ success: true, data });
+  } catch (error) {
+    handleKnownError(error, res, next);
+  }
+};
+
+exports.listarEnviados = async (req, res, next) => {
+  try {
+    const data = await service.listarEnviados(req.user.id_usuario);
+    res.json({ success: true, data });
+  } catch (error) {
+    handleKnownError(error, res, next);
+  }
+};
+
 exports.obtenerOCrearConversacion = async (req, res, next) => {
   const id = idFrom(req.params.id);
   if (!id) return invalidId(res);
   try {
     const conversacion = await service.obtenerOCrearConversacion(id, req.user.id_usuario);
     res.status(201).json({ success: true, message: 'Conversacion lista.', data: conversacion });
+  } catch (error) {
+    handleKnownError(error, res, next);
+  }
+};
+
+exports.finalizarIntercambio = async (req, res, next) => {
+  const id = idFrom(req.params.idIntercambio || req.params.id);
+  if (!id) return invalidId(res);
+
+  try {
+    const resultado = await service.finalizarIntercambio(id, req.user.id_usuario);
+    res.json(resultado);
   } catch (error) {
     handleKnownError(error, res, next);
   }
