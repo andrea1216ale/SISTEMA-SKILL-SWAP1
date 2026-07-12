@@ -159,26 +159,27 @@ const Calificacion = {
 
   listarUsuariosConResumen: async (idUsuarioActual) => {
     const connection = db.promise();
-    const [userColumns, messageColumns] = await Promise.all([
-      columnsFor(connection, 'usuarios'),
-      columnsFor(connection, 'mensajes')
-    ]);
+    const userColumns = await columnsFor(connection, 'usuarios');
     const userName = userNameExpression('u', userColumns);
     const descriptionColumn = userColumns.has('descripcion') ? 'u.descripcion' : 'NULL';
     const levelColumn = userColumns.has('nivel') ? 'u.nivel' : 'NULL';
-    const chatExists = chatExistsExpression(messageColumns);
-    const params = chatExists === 'FALSE'
-      ? [
-          idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual
-        ]
-      : [
-          idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual,
-          idUsuarioActual, idUsuarioActual, idUsuarioActual
-        ];
+    const chatExists = `EXISTS (
+      SELECT 1
+      FROM mensajes msg_chat
+      INNER JOIN conversaciones conv_chat ON conv_chat.id_conversacion = msg_chat.id_conversacion
+      INNER JOIN intercambios inter_chat ON inter_chat.id_intercambio = conv_chat.id_intercambio
+      WHERE (
+        (inter_chat.usuario_envia = ? AND inter_chat.usuario_recibe = u.id_usuario)
+        OR (inter_chat.usuario_recibe = ? AND inter_chat.usuario_envia = u.id_usuario)
+      )
+    )`;
+    const params = [
+      idUsuarioActual, idUsuarioActual,
+      idUsuarioActual, idUsuarioActual, idUsuarioActual,
+      idUsuarioActual, idUsuarioActual, idUsuarioActual,
+      idUsuarioActual, idUsuarioActual, idUsuarioActual,
+      idUsuarioActual
+    ];
 
     const [rows] = await connection.query(
       `SELECT
@@ -224,9 +225,13 @@ const Calificacion = {
            u.id_usuario = ?
            OR EXISTS (
              SELECT 1
-             FROM intercambios rel
-             WHERE rel.usuario_envia = ?
-               AND rel.usuario_recibe = u.id_usuario
+             FROM mensajes msg_rel
+             INNER JOIN conversaciones conv_rel ON conv_rel.id_conversacion = msg_rel.id_conversacion
+             INNER JOIN intercambios rel ON rel.id_intercambio = conv_rel.id_intercambio
+             WHERE (
+               (rel.usuario_envia = ? AND rel.usuario_recibe = u.id_usuario)
+               OR (rel.usuario_recibe = ? AND rel.usuario_envia = u.id_usuario)
+             )
            )
          )
        GROUP BY u.id_usuario, nombre, descripcion, nivel

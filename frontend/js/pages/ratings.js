@@ -121,7 +121,7 @@ function renderCard(item, currentUserId, sentRequests) {
   const canRate = !isCurrentUser && Number(item.id_intercambio_calificable) > 0;
   const alreadyRated = Number(item.ya_calificado_por_mi || 0) === 1;
   const hasConversation = Number(item.han_chateado || 0) === 1;
-  const canRequest = !isCurrentUser && !canRate && !alreadyRated && !hasConversation && skill?.id_habilidad;
+  const canRequest = false;
   const rateLabel = isCurrentUser
     ? 'Tu perfil'
     : alreadyRated
@@ -160,11 +160,9 @@ function renderCard(item, currentUserId, sentRequests) {
       ${canRate
         ? `<button type="button" class="rating-request rating-request--rate" data-action="rate-user" data-user-id="${evaluatedUserId}">Calificar</button>`
         : `<button type="button" class="rating-request rating-request--rate" disabled>${rateLabel}</button>`}
-      ${canRate
-        ? ''
-        : canRequest
+      ${canRequest
         ? `<button type="button" class="rating-request" data-action="request-swap" data-user-id="${evaluatedUserId}" data-skill-id="${Number(skill.id_habilidad)}" ${alreadySent ? 'disabled' : ''}>${alreadySent ? 'Solicitud enviada' : 'Solicitar intercambio'}</button>`
-        : `<button type="button" class="rating-request" disabled>${disabledReason}</button>`}
+        : ''}
     </div>
   </article>`;
 }
@@ -235,7 +233,7 @@ function renderMetricStrip({ ownSummary, pendingCount, communityCount }) {
     <article><span>Promedio recibido</span><strong>${Number(ownSummary?.promedio || 0).toFixed(1)}</strong></article>
     <article><span>Reseñas recibidas</span><strong>${Number(ownSummary?.total_calificaciones || 0)}</strong></article>
     <article><span>Pendientes por calificar</span><strong>${pendingCount}</strong></article>
-    <article><span>Solicitudes listadas</span><strong>${communityCount}</strong></article>
+    <article><span>Conversaciones listadas</span><strong>${communityCount}</strong></article>
   </section>`;
 }
 
@@ -278,7 +276,10 @@ export async function renderRatingsPage(container) {
 
   function renderRatings() {
     const ownUser = ratings.find((item) => Number(item.id_usuario) === Number(user.id_usuario));
-    const interactions = ratings.filter((item) => Number(item.id_usuario) !== Number(user.id_usuario));
+    const interactions = ratings.filter((item) =>
+      Number(item.id_usuario) !== Number(user.id_usuario)
+      && Number(item.han_chateado || 0) === 1
+    );
     const pending = interactions.filter((item) => Number(item.id_intercambio_calificable) > 0);
     const rated = interactions.filter((item) => Number(item.ya_calificado_por_mi || 0) === 1);
     const filteredInteractions = ratingFilter === 'pending'
@@ -293,16 +294,16 @@ export async function renderRatingsPage(container) {
       renderMetricStrip({ ownSummary, pendingCount: pending.length, communityCount: interactions.length }),
       renderOwnSummary(ownSummary, ownReviews),
       renderSection(
-        'Solicitudes enviadas',
-        'Historial solicitado',
-        'Usuarios a quienes les enviaste una solicitud de intercambio.',
+        'Conversaciones',
+        'Historial conversado',
+        'Usuarios con quienes ya tuviste una conversacion dentro de un intercambio.',
         filteredInteractions,
         (item) => renderCard(item, user.id_usuario, sentRequests),
         ratingFilter === 'pending'
           ? 'No tienes usuarios pendientes por calificar.'
           : ratingFilter === 'rated'
             ? 'Aun no has calificado a ningun usuario.'
-            : 'Aun no has solicitado intercambios para mostrar.',
+            : 'Aun no tienes conversaciones para mostrar.',
         'ratings-section--community',
         renderRatingFilters(ratingFilter)
       )
