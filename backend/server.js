@@ -26,7 +26,8 @@ const io = new Server(httpServer, {
 configureSocket(io);
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
   res.send('Servidor Skill Swap funcionando');

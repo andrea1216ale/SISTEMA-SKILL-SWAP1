@@ -42,14 +42,11 @@ export async function loginUser(credentials) {
 }
 
 function authenticatedOptions(userId, options = {}) {
-  return {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-User-Id': String(userId),
-      ...(options.headers || {})
-    }
-  };
+  const headers = { 'X-User-Id': String(userId), ...(options.headers || {}) };
+  if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return { ...options, headers };
 }
 
 export async function verifyEmail(data) {
@@ -98,12 +95,18 @@ export function getFeedSkills() {
   return request('/habilidades-feed');
 }
 
+export function obtenerIdiomas() {
+  return request('/idiomas');
+}
+
 export function createPost(userId, post) {
-  return request('/publicaciones', authenticatedOptions(userId, { method: 'POST', body: JSON.stringify(post) }));
+  const body = post instanceof FormData ? post : JSON.stringify(post);
+  return request('/publicaciones', authenticatedOptions(userId, { method: 'POST', body }));
 }
 
 export function updatePost(userId, id, post) {
-  return request(`/publicaciones/${id}`, authenticatedOptions(userId, { method: 'PUT', body: JSON.stringify(post) }));
+  const body = post instanceof FormData ? post : JSON.stringify(post);
+  return request(`/publicaciones/${id}`, authenticatedOptions(userId, { method: 'PUT', body }));
 }
 
 export function deletePost(userId, id) {

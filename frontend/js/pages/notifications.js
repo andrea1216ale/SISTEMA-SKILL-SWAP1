@@ -210,7 +210,6 @@ export async function renderNotificationsPage(container) {
           <h1>Notificaciones</h1>
           <span>Revisa mensajes, intercambios, sesiones, calificaciones y avisos importantes.</span>
         </div>
-        <button type="button" id="markAllNotifications">Marcar todas</button>
       </header>
       <div class="notif-content">
         <section class="notif-board">
@@ -221,7 +220,6 @@ export async function renderNotificationsPage(container) {
           <div id="notificationMetrics">${renderMetrics(summary)}</div>
           <div id="notificationList" aria-live="polite"><div class="notif-loading"><i></i><p>Cargando notificaciones...</p></div></div>
         </section>
-        <aside id="notificationPreferences" class="notif-side"></aside>
       </div>
     </main>
   </div>`;
@@ -229,14 +227,12 @@ export async function renderNotificationsPage(container) {
   const list = container.querySelector('#notificationList');
   const metrics = container.querySelector('#notificationMetrics');
   const filtersEl = container.querySelector('#notificationFilters');
-  const preferencesEl = container.querySelector('#notificationPreferences');
   const searchInput = container.querySelector('#notificationSearch');
 
   function paint() {
     metrics.innerHTML = renderMetrics(summary);
     filtersEl.innerHTML = renderFilters(activeFilter);
     list.innerHTML = renderGroupedNotifications(notifications);
-    preferencesEl.innerHTML = renderPreferences(preferences);
   }
 
   async function load() {
@@ -293,25 +289,6 @@ export async function renderNotificationsPage(container) {
 
     if (response.success) await load();
     else button.disabled = false;
-  });
-
-  container.querySelector('#markAllNotifications').addEventListener('click', async (event) => {
-    event.currentTarget.disabled = true;
-    await marcarTodasNotificacionesLeidas(user.id_usuario);
-    event.currentTarget.disabled = false;
-    await load();
-  });
-
-  preferencesEl.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = event.target;
-    const payload = Object.fromEntries(preferenceLabels.map(([key]) => [key, form.elements[key]?.checked || false]));
-    payload.hora_resumen = `${form.elements.hora_resumen.value || '20:00'}:00`;
-    const feedback = form.querySelector('.notif-settings__feedback');
-    const response = await actualizarPreferenciasNotificaciones(user.id_usuario, payload);
-    feedback.hidden = false;
-    feedback.textContent = response.success ? 'Preferencias guardadas.' : (response.message || response.error);
-    if (response.success) preferences = response.data || preferences;
   });
 
   container.querySelector('#logoutButton')?.addEventListener('click', () => {

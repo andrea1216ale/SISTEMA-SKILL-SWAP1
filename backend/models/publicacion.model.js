@@ -138,3 +138,8 @@ exports.skills = async () => {
   const [rows] = await db.promise().query('SELECT id_habilidad, nombre, categoria FROM habilidades ORDER BY categoria, nombre');
   return rows;
 };
+
+exports.idiomas = async () => {
+  const [rows] = await db.promise().query('SELECT id_idioma, nombre FROM idiomas ORDER BY nombre');
+  return rows;
+};

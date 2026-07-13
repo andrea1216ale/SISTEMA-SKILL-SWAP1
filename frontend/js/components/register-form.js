@@ -1,8 +1,12 @@
-import { registerUser } from '../services/api.js';
+import { registerUser, obtenerIdiomas, getFeedSkills } from '../services/api.js';
 
 export class RegisterForm {
   constructor(container) {
     this.container = container;
+    this.selectedIdiomas = [];
+    this.selectedHabilidades = [];
+    this.idiomasList = [];
+    this.habilidadesList = [];
   }
 
   render() {
@@ -105,30 +109,28 @@ export class RegisterForm {
                 </div>
               </div>
 
-              <fieldset class="register-choices" id="idiomasOptions">
+              <fieldset class="register-choices" id="idiomasFieldset">
                 <legend>Idiomas que conoces</legend>
-                <div class="register-chips">
-                  <label><input type="checkbox" value="Español" /><span>Español</span></label>
-                  <label><input type="checkbox" value="Inglés" /><span>Inglés</span></label>
-                  <label><input type="checkbox" value="Francés" /><span>Francés</span></label>
-                  <label><input type="checkbox" value="Portugués" /><span>Portugués</span></label>
-                  <label><input type="checkbox" value="Italiano" /><span>Italiano</span></label>
-                  <label><input type="checkbox" value="Japonés" /><span>Japonés</span></label>
+                <div class="register-autocomplete">
+                  <div class="register-autocomplete__field">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.7"/><path d="m16.5 16.5 3.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <input id="idiomasSearch" type="text" placeholder="Buscar idioma..." autocomplete="off">
+                  </div>
+                  <ul class="register-autocomplete__dropdown" id="idiomasDropdown"></ul>
                 </div>
+                <div class="register-autocomplete__chips" id="idiomasChips"></div>
               </fieldset>
 
-              <fieldset class="register-choices" id="habilidadesOptions">
+              <fieldset class="register-choices" id="habilidadesFieldset">
                 <legend>Habilidades que puedes compartir</legend>
-                <div class="register-chips">
-                  <label><input type="checkbox" value="Programación" /><span>Programación</span></label>
-                  <label><input type="checkbox" value="Diseño gráfico" /><span>Diseño gráfico</span></label>
-                  <label><input type="checkbox" value="Marketing digital" /><span>Marketing</span></label>
-                  <label><input type="checkbox" value="Fotografía" /><span>Fotografía</span></label>
-                  <label><input type="checkbox" value="Cocina" /><span>Cocina</span></label>
-                  <label><input type="checkbox" value="Edición de video" /><span>Video</span></label>
-                  <label><input type="checkbox" value="Excel" /><span>Excel</span></label>
-                  <label><input type="checkbox" value="Inteligencia Artificial" /><span>IA</span></label>
+                <div class="register-autocomplete">
+                  <div class="register-autocomplete__field">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.7"/><path d="m16.5 16.5 3.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <input id="habilidadesSearch" type="text" placeholder="Buscar habilidad..." autocomplete="off">
+                  </div>
+                  <ul class="register-autocomplete__dropdown" id="habilidadesDropdown"></ul>
                 </div>
+                <div class="register-autocomplete__chips" id="habilidadesChips"></div>
               </fieldset>
 
               <label class="register-terms"><input type="checkbox" id="acceptTerms" required /><span>Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a>.</span></label>
@@ -140,7 +142,94 @@ export class RegisterForm {
         </section>
       </main>
     `;
+    this.loadData();
+  }
+
+  async loadData() {
+    const [idiomasRes, habilidadesRes] = await Promise.all([
+      obtenerIdiomas(),
+      getFeedSkills()
+    ]);
+    this.idiomasList = idiomasRes.data || idiomasRes;
+    this.habilidadesList = habilidadesRes.data || habilidadesRes;
+    this.initAutocomplete();
     this.attachEvents();
+  }
+
+  initAutocomplete() {
+    this.setupAutocomplete(
+      this.container.querySelector('#idiomasSearch'),
+      this.container.querySelector('#idiomasDropdown'),
+      this.container.querySelector('#idiomasChips'),
+      this.idiomasList,
+      this.selectedIdiomas
+    );
+    this.setupAutocomplete(
+      this.container.querySelector('#habilidadesSearch'),
+      this.container.querySelector('#habilidadesDropdown'),
+      this.container.querySelector('#habilidadesChips'),
+      this.habilidadesList,
+      this.selectedHabilidades
+    );
+
+    document.addEventListener('click', (event) => {
+      document.querySelectorAll('.register-autocomplete__dropdown.is-open').forEach((el) => {
+        if (!el.closest('.register-autocomplete')?.contains(event.target)) {
+          el.classList.remove('is-open');
+        }
+      });
+    });
+  }
+
+  setupAutocomplete(input, dropdown, chipsContainer, sourceList, selectedList) {
+    const filteredList = () => sourceList.filter((item) => !selectedList.some((s) => s.nombre === item.nombre || s === item.nombre));
+
+    const renderDropdown = (query) => {
+      const items = filteredList().filter((item) => {
+        const name = item.nombre || item;
+        return name.toLowerCase().includes(query.toLowerCase());
+      });
+
+      if (!items.length || !query) {
+        dropdown.classList.remove('is-open');
+        return;
+      }
+
+      dropdown.innerHTML = items.map((item) => {
+        const name = item.nombre || item;
+        return `<li data-value="${name}">${name}</li>`;
+      }).join('');
+      dropdown.classList.add('is-open');
+    };
+
+    const renderChips = () => {
+      chipsContainer.innerHTML = selectedList.map((item) => {
+        const name = item.nombre || item;
+        return `<span class="register-chip">${name}<button type="button" data-remove="${name}" aria-label="Eliminar ${name}">&times;</button></span>`;
+      }).join('');
+    };
+
+    input.addEventListener('input', () => renderDropdown(input.value.trim()));
+
+    dropdown.addEventListener('click', (event) => {
+      const li = event.target.closest('[data-value]');
+      if (!li) return;
+      const value = li.dataset.value;
+      const item = sourceList.find((s) => (s.nombre || s) === value);
+      if (item) selectedList.push(item);
+      input.value = '';
+      dropdown.classList.remove('is-open');
+      renderChips();
+    });
+
+    chipsContainer.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-remove]');
+      if (!btn) return;
+      const value = btn.dataset.remove;
+      const idx = selectedList.findIndex((s) => (s.nombre || s) === value);
+      if (idx !== -1) selectedList.splice(idx, 1);
+      renderChips();
+    });
   }
 
   attachEvents() {
@@ -162,8 +251,8 @@ export class RegisterForm {
         password: password.value,
         fecha_nacimiento: this.container.querySelector('#fechaNacimiento').value,
         nivel: this.container.querySelector('#nivel').value,
-        idiomas: this.getCheckedValues('#idiomasOptions input[type=checkbox]'),
-        habilidades: this.getCheckedValues('#habilidadesOptions input[type=checkbox]'),
+        idiomas: this.selectedIdiomas.map((item) => item.nombre || item),
+        habilidades: this.selectedHabilidades.map((item) => item.nombre || item),
       };
 
       const result = await registerUser(usuario);
@@ -176,9 +265,5 @@ export class RegisterForm {
     });
 
     this.container.querySelector('#confirmPassword').addEventListener('input', (event) => event.target.setCustomValidity(''));
-  }
-
-  getCheckedValues(selector) {
-    return Array.from(this.container.querySelectorAll(selector)).filter((input) => input.checked).map((input) => input.value);
   }
 }

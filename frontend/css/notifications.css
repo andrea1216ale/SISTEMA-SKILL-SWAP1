@@ -5,6 +5,12 @@ body[data-page="notifications"] {
   --n-paper: #fffefa;
   --n-bg: #f4f7f3;
   --n-teal: #116b68;
+  --d-ink: var(--n-ink);
+  --d-soft: var(--n-soft);
+  --d-line: var(--n-line);
+  --d-paper: var(--n-paper);
+  --d-bg: var(--n-bg);
+  --d-teal: var(--n-teal);
   min-width: 320px;
   color: var(--n-ink);
   background: var(--n-bg);
@@ -56,7 +62,7 @@ body[data-page="notifications"] {
 
 .notif-content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
   align-items: start;
 }
